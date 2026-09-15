@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {WORKS,shortDetail} from '../dist/data.js';
-import {checkAnswer,getWork,makeQuiz,finishQuiz,quizScore,quizProgress,defaultStore,recordRecall,needsPractice,sanitizeStore,hasPhrase,STUDY_FIELDS,FACT_FIELDS,makeChoices,makeStudyQuestions,dateIntervals,dateInRange,choiceAnswer} from '../dist/engine.js';
+import {checkAnswer,getWork,makeQuiz,finishQuiz,quizScore,quizProgress,defaultStore,recordRecall,needsPractice,sanitizeStore,hasPhrase,STUDY_FIELDS,DETAIL_FIELDS,studyFields,FACT_FIELDS,makeChoices,makeStudyQuestions,dateIntervals,dateInRange,choiceAnswer} from '../dist/engine.js';
 
 test('all 14 canonical titles, material lines, and dates are recognized',()=>{for(const w of WORKS)for(const field of ['name','material','date'])assert.equal(checkAnswer(w,field,w[field]).status,'correct',`${w.id}: ${field}`);});
 test('concise identification answers are accepted without parenthetical detail',()=>{
@@ -61,6 +61,17 @@ test('all 98 multiple-choice combinations have four unique choices and one accep
  for(const distractor of q.options.filter(x=>x!==q.answer)){assert.notEqual(checkAnswer(w,field,distractor).status,'correct',`${w.id} ${field}: ${distractor}`);if(field==='date'){const other=WORKS.find(x=>x.date===distractor);assert.ok(other);for(const [lo,hi] of dateIntervals(other))for(let n=lo;n<=hi;n++)assert.equal(dateInRange(w,n),false);}}}
 });
 test('all-details multiple choice covers every work and category',()=>{const qs=makeStudyQuestions({focus:'all',mode:'choice'});assert.equal(qs.length,98);assert.equal(new Set(qs.map(q=>`${q.id}:${q.field}`)).size,98);for(const w of WORKS)assert.deepEqual(qs.filter(q=>q.id===w.id).map(q=>q.field),STUDY_FIELDS);});
+test('Details covers every category except name and material in both modes',()=>{
+ assert.deepEqual(studyFields('details'),['date','location','artist','culture','context']);
+ const choices=makeStudyQuestions({focus:'details',mode:'choice'});
+ assert.equal(choices.length,70);
+ assert.equal(new Set(choices.map(q=>`${q.id}:${q.field}`)).size,70);
+ for(const w of WORKS)assert.deepEqual(choices.filter(q=>q.id===w.id).map(q=>q.field),DETAIL_FIELDS);
+ const typed=makeStudyQuestions({focus:'details',mode:'type'});
+ assert.equal(typed.length,14);assert.ok(typed.every(q=>q.field==='details'));
+ for(const mode of ['type','choice']){const s=defaultStore(),questions=mode==='type'?typed:choices;s.focus='details';s.mode=mode;s.study={focus:'details',mode,questions,queue:questions.map(q=>q.id),index:0,typed:'Uruk, Iraq',ratings:{},responses:{}};recordRecall(s,12,'details',true);const clean=sanitizeStore(JSON.parse(JSON.stringify(s)));assert.equal(clean.focus,'details');assert.deepEqual(clean.study.questions,questions);assert.equal(clean.study.typed,'Uruk, Iraq');assert.equal(clean.stats[12].details.correct,1);}
+});
+test('Details missed practice excludes name and material mistakes',()=>{const s=defaultStore();recordRecall(s,12,'name',false);recordRecall(s,12,'material',false);assert.equal(needsPractice(s,12,'details'),false);recordRecall(s,12,'date',false);assert.equal(needsPractice(s,12,'details'),true);recordRecall(s,12,'date',true);assert.equal(needsPractice(s,12,'details'),false);recordRecall(s,12,'details',false);assert.equal(needsPractice(s,12,'details'),true);});
 test('multiple-choice quizzes score all three fields and preserve options on reload',()=>{const s=defaultStore();s.quiz=makeQuiz({mode:'choice',count:5,factField:'artist'});const q=s.quiz;for(const x of q.questions){for(const key of ['name','material','fact'])q.answers[x.id][key]=x.choices[key==='fact'?'artist':key].answer;}const restored=sanitizeStore(JSON.parse(JSON.stringify(s))).quiz;assert.deepEqual(restored.questions,q.questions);finishQuiz(restored);assert.deepEqual(quizScore(restored),{correct:15,pending:0,total:15});const id=restored.questions[0].id;restored.answers[id].fact='Imhotep';finishQuiz(restored);assert.equal(restored.grades[id].fact,false);});
 test('legacy answers and study ratings survive migration without claiming a category',()=>{const s=defaultStore();s.study={focus:'material',queue:[12,13],index:1,ratings:{12:true},typed:'greywacke'};s.quiz=makeQuiz({ids:[12],count:1});s.quiz.answers[12]={name:'title',material:'material',fact:'old fact'};const clean=sanitizeStore(s);assert.equal(clean.quiz.answers[12].fact,'old fact');assert.equal(clean.quiz.answers[12].factField,null);assert.equal(quizProgress(clean.quiz),0);assert.equal(clean.study.ratings[0],true);assert.deepEqual(clean.study.responses,{});});
 test('mixed study options, answer and rating survive reload',()=>{const s=defaultStore(),questions=makeStudyQuestions({focus:'all',mode:'choice',ids:[12]});s.mode='choice';s.focus='all';s.study={focus:'all',mode:'choice',questions,queue:questions.map(q=>q.id),index:1,responses:{1:questions[1].answer},ratings:{0:true},revealed:true};const clean=sanitizeStore(JSON.parse(JSON.stringify(s)));assert.deepEqual(clean.study.questions,questions);assert.equal(clean.study.responses[1],questions[1].answer);assert.equal(clean.study.ratings[0],true);assert.equal(clean.study.revealed,true);});

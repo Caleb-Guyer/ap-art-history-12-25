@@ -2,6 +2,7 @@
 // Rulers, donors, and depicted figures are not automatically the artists.
 export const FIELDS = {
   all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
+  details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, artists, culture and period, and context.'},
   name: {label:'Names', prompt:'Which artwork is this?', help:'Give the title of the assigned work. Include the person or place that identifies it.'},
   material: {label:'Materials', prompt:'What is it made of?', help:'Give the complete material line for the assigned work, including inlay and surface treatments.'},
   date: {label:'Dates', prompt:'When was it made?', help:'Any year within a listed range is accepted. Karnak has separate temple and hall dates.'},

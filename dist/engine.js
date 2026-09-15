@@ -1,8 +1,10 @@
-import {WORKS,shortDetail} from './data.js?v=5';
+import {WORKS,FIELDS,shortDetail} from './data.js?v=6';
 
 export const FACT_FIELDS=['date','location','artist','culture'];
 export const STUDY_FIELDS=['name','material','date','location','artist','culture','context'];
-export const FIELD_LABELS={name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period',context:'Context'};
+export const DETAIL_FIELDS=STUDY_FIELDS.filter(field=>field!=='name'&&field!=='material');
+export const FIELD_LABELS={details:'Details',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period',context:'Context'};
+export function studyFields(focus){return focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:[focus];}
 
 export const STORAGE_KEY='ap-art-history-12-25-v1';
 export const normalize=value=>String(value??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/tutankham[eo]n/g,'tutankhamun').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
@@ -29,7 +31,7 @@ export function makeChoices(work,field,random=Math.random){
  return {options,answer:correct};
 }
 export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode='type',randomize=false,random=Math.random}={}){
- const fields=mode==='choice'&&focus==='all'?STUDY_FIELDS:[focus];
+ const fields=mode==='choice'?studyFields(focus):[focus];
  const questions=ids.flatMap(id=>fields.map(field=>({id,field,...(mode==='choice'?makeChoices(getWork(id),field,random):{})})));
  return randomize?shuffle(questions,random):questions;
 }
@@ -89,14 +91,14 @@ export function checkAnswer(work,field,answer){
   if(c&&(!period||hasPhrase(input,period)))return status('correct','Culture and principal period recognized.');
   return status('partial',c?'Add the kingdom or period.':'Compare the civilization and period with the answer.');
  }
- if(field==='context'||field==='all')return status('review','Compare your recall with the facts below, then mark it yourself.');
+ if(field==='context'||field==='all'||field==='details')return status('review','Compare your recall with the facts below, then mark it yourself.');
  return status('review','Compare your answer with the reference.');
 }
 
 export function defaultStore(){return {version:1,stats:{},history:[],focus:'material',mode:'type',study:null,quiz:null};}
 export function sanitizeStore(raw){
  const clean=defaultStore();if(!raw||typeof raw!=='object'||raw.version!==1)return clean;
- const fields=['all','name','material','date','location','artist','culture','context'];
+ const fields=Object.keys(FIELDS);
  clean.focus=fields.includes(raw.focus)?raw.focus:'material';
  clean.mode=raw.mode==='choice'?'choice':'type';
  for(const w of WORKS){const saved=raw.stats?.[w.id];if(!saved||typeof saved!=='object')continue;clean.stats[w.id]={};for(const f of fields){const v=saved[f];if(v&&typeof v==='object'){clean.stats[w.id][f]={seen:Math.max(0,Math.min(100000,Number(v.seen)||0)),correct:Math.max(0,Math.min(100000,Number(v.correct)||0)),streak:Math.max(0,Math.min(100000,Number(v.streak)||0)),lastCorrect:v.lastCorrect===true};}}}
@@ -119,7 +121,7 @@ export function sanitizeStore(raw){
  return clean;
 }
 export function recordRecall(store,id,field,correct){store.stats[id]??={};const stat=store.stats[id][field]??{seen:0,correct:0,streak:0};store.stats[id][field]={seen:stat.seen+1,correct:stat.correct+(correct?1:0),streak:correct?stat.streak+1:0,lastCorrect:correct};}
-export function needsPractice(store,id,field){const stats=store.stats[id]??{};if(field==='all')return Object.values(stats).some(s=>s.seen>0&&!s.lastCorrect);return stats[field]?.seen>0&&!stats[field].lastCorrect;}
+export function needsPractice(store,id,field){const stats=store.stats[id]??{};if(field==='all')return Object.values(stats).some(s=>s.seen>0&&!s.lastCorrect);if(field==='details')return [...DETAIL_FIELDS,'details'].some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);return stats[field]?.seen>0&&!stats[field].lastCorrect;}
 export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.id]?.material?.streak??0)>=2).length;}
 export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&FACT_FIELDS.includes(a.factField);}).length;}
 export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){

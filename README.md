@@ -4,7 +4,8 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 
 ## Features
 
-- Eight study categories: all details, names, materials, dates, locations, artists, culture/period, and context.
+- Nine study categories: all details, details, names, materials, dates, locations, artists, culture/period, and context.
+- Details combines dates, locations, artists, culture/period, and context. Typed recall shows these together; multiple choice covers 70 questions across the 14 works.
 - Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 98 work/category combinations, with instant feedback and missed-question practice.
 - Fourteen works with thirty course images, including alternate views and associated objects.
 - A typed or multiple-choice mock quiz: identify the image with its **name, complete material line, and a chosen date, location, artist, or culture/period**. Change the third category for each work.
