@@ -1,0 +1,69 @@
+# AP Art History · Works 12–25
+
+A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
+
+## Features
+
+- Eight study categories: all details, names, materials, dates, locations, artists, culture/period, and context.
+- Fourteen works with thirty course images, including alternate views and associated objects.
+- A mock quiz: identify the image with its **name, complete material line, and one other fact**.
+- Full, seven-work, and five-work quizzes; optional timer and alternate views.
+- Material checking that catches omitted inlays, supports, colors, and surface treatments.
+- Conservative suggested marks, self-marked extra facts, and adjustable grading before saving.
+- Missed-answer practice and device-local saved sessions; progress import/export.
+- Material comparisons, dates, vocabulary, and a printable extra-fact sheet.
+- Keyboard, mobile, and reduced-motion support. No sign-in or API key required.
+
+## Run locally
+
+Requires Node.js 20 or later. There are no package dependencies to install.
+
+```sh
+npm start
+```
+
+Open `http://127.0.0.1:4173/`. All public files are in `dist/`; any ordinary static web server can serve that directory. Use a web server, not a `file://` URL, because the app uses JavaScript modules.
+
+```sh
+npm test
+npm run check
+```
+
+## Hosting
+
+The site is static. Deploy the contents of `dist/` as the public root. Navigation uses URL fragments, so no server-side route fallback is required. Asset references are relative and also work under a GitHub Pages project path.
+
+`.openai/hosting.json` records the Sites deployment identity. It contains no credentials. The GitHub workflow checks the content and quiz logic on each push and pull request.
+
+## Content and grading
+
+Primary source: the course PDF **Unit 2 ANCIENT NEAR EASTERN ART.pdf**, images 12–25. Each record in `dist/data.js` lists one-based PDF page numbers. Supplementary scholarly or museum sources appear only where needed and are linked in the work notes.
+
+The app preserves course material terminology and explicitly lists conflicting slide dates. For example, the White Temple has two date ranges in the slides; the app accepts both. Hammurabi uses **basalt** to match this course. Makers are distinguished from patrons and depicted rulers. Senenmut is described as an attributed architect, not a securely documented signature.
+
+The gold death mask on slide 80 is a separate object from Tutankhamun’s innermost coffin. It appears as a related study image and is excluded from the mock quiz. Plans with labels are also excluded from quiz sampling. Alternate views of Hatshepsut’s associated sculpture still refer to the full assigned-work material line.
+
+Practice marking is conservative and deterministic; it uses no AI service. Each quiz has three points per work. Blank fields receive zero. Complete recognized names/materials get suggested credit; ambiguous wording remains pending for review. Extra facts always require self-marking and should add information beyond the name and material. Final results can be saved only after every pending mark is resolved.
+
+## Privacy
+
+Progress and typed answers stay in local browser storage. There is no account, backend database, analytics, or shared class leaderboard. Each visitor has separate progress. Export a progress file to move it between devices. A timer continues while a quiz is saved and exited.
+
+## Image rights
+
+Artwork images were extracted from the supplied teaching PDF. `dist/images/sources.json` records the source slide of each image. Copyright in photographs and reproductions remains with the original rights holders; this repository does not assert a blanket license for those images. The source PDF itself is not redistributed here.
+
+## Structure
+
+```text
+dist/
+  index.html      entrypoint
+  app.js          interface, sessions, and local progress
+  data.js         artworks, accepted answers, and references
+  engine.js       checking, grading, and saved-data validation
+  styles.css      shared visual styles
+  compact.css     minimal layout and responsive adjustments
+  images/         artwork images and provenance manifest
+scripts/          local server and content checks
+tests/            answer and session regression tests
+```

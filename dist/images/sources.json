@@ -1,0 +1,246 @@
+{
+  "sourceDocument": "Unit 2 ANCIENT NEAR EASTERN ART.pdf",
+  "note": "Images extracted from the user-supplied course slides for private study. Original image rights remain with their owners. No blanket image license is asserted.",
+  "images": [
+    {
+      "file": "images/work-12-1.jpg",
+      "work": 12,
+      "pdfPage": 8,
+      "embeddedImageIndex": 2,
+      "width": 736,
+      "height": 401
+    },
+    {
+      "file": "images/work-12-2.jpg",
+      "work": 12,
+      "pdfPage": 9,
+      "embeddedImageIndex": 0,
+      "width": 833,
+      "height": 500
+    },
+    {
+      "file": "images/work-12-3.jpg",
+      "work": 12,
+      "pdfPage": 8,
+      "embeddedImageIndex": 1,
+      "width": 638,
+      "height": 903
+    },
+    {
+      "file": "images/work-13-1.jpg",
+      "work": 13,
+      "pdfPage": 16,
+      "embeddedImageIndex": 0,
+      "width": 510,
+      "height": 386
+    },
+    {
+      "file": "images/work-14-1.jpg",
+      "work": 14,
+      "pdfPage": 13,
+      "embeddedImageIndex": 0,
+      "width": 564,
+      "height": 830
+    },
+    {
+      "file": "images/work-14-2.jpg",
+      "work": 14,
+      "pdfPage": 13,
+      "embeddedImageIndex": 1,
+      "width": 1500,
+      "height": 1055
+    },
+    {
+      "file": "images/work-15-1.jpg",
+      "work": 15,
+      "pdfPage": 21,
+      "embeddedImageIndex": 0,
+      "width": 837,
+      "height": 1004
+    },
+    {
+      "file": "images/work-15-2.jpg",
+      "work": 15,
+      "pdfPage": 23,
+      "embeddedImageIndex": 1,
+      "width": 410,
+      "height": 554
+    },
+    {
+      "file": "images/work-16-1.jpg",
+      "work": 16,
+      "pdfPage": 25,
+      "embeddedImageIndex": 0,
+      "width": 1200,
+      "height": 525
+    },
+    {
+      "file": "images/work-16-2.jpg",
+      "work": 16,
+      "pdfPage": 25,
+      "embeddedImageIndex": 1,
+      "width": 1024,
+      "height": 434
+    },
+    {
+      "file": "images/work-17-1.jpg",
+      "work": 17,
+      "pdfPage": 43,
+      "embeddedImageIndex": 0,
+      "width": 1600,
+      "height": 874
+    },
+    {
+      "file": "images/work-17-2.jpg",
+      "work": 17,
+      "pdfPage": 34,
+      "embeddedImageIndex": 2,
+      "width": 1100,
+      "height": 619
+    },
+    {
+      "file": "images/work-17-3.jpg",
+      "work": 17,
+      "pdfPage": 35,
+      "embeddedImageIndex": 0,
+      "width": 1204,
+      "height": 1177
+    },
+    {
+      "file": "images/work-18-1.jpg",
+      "work": 18,
+      "pdfPage": 51,
+      "embeddedImageIndex": 0,
+      "width": 1107,
+      "height": 1600
+    },
+    {
+      "file": "images/work-18-2.jpg",
+      "work": 18,
+      "pdfPage": 51,
+      "embeddedImageIndex": 1,
+      "width": 600,
+      "height": 443
+    },
+    {
+      "file": "images/work-19-1.jpg",
+      "work": 19,
+      "pdfPage": 59,
+      "embeddedImageIndex": 1,
+      "width": 817,
+      "height": 1200
+    },
+    {
+      "file": "images/work-19-2.jpg",
+      "work": 19,
+      "pdfPage": 59,
+      "embeddedImageIndex": 2,
+      "width": 978,
+      "height": 955
+    },
+    {
+      "file": "images/work-20-1.jpg",
+      "work": 20,
+      "pdfPage": 63,
+      "embeddedImageIndex": 1,
+      "width": 800,
+      "height": 600
+    },
+    {
+      "file": "images/work-20-2.jpg",
+      "work": 20,
+      "pdfPage": 63,
+      "embeddedImageIndex": 2,
+      "width": 1192,
+      "height": 1600
+    },
+    {
+      "file": "images/work-21-1.jpg",
+      "work": 21,
+      "pdfPage": 70,
+      "embeddedImageIndex": 0,
+      "width": 684,
+      "height": 457
+    },
+    {
+      "file": "images/work-21-2.jpg",
+      "work": 21,
+      "pdfPage": 71,
+      "embeddedImageIndex": 0,
+      "width": 329,
+      "height": 500
+    },
+    {
+      "file": "images/work-21-3.jpg",
+      "work": 21,
+      "pdfPage": 71,
+      "embeddedImageIndex": 1,
+      "width": 426,
+      "height": 700
+    },
+    {
+      "file": "images/work-22-1.jpg",
+      "work": 22,
+      "pdfPage": 75,
+      "embeddedImageIndex": 0,
+      "width": 640,
+      "height": 541
+    },
+    {
+      "file": "images/work-23-1.jpg",
+      "work": 23,
+      "pdfPage": 79,
+      "embeddedImageIndex": 0,
+      "width": 491,
+      "height": 1600
+    },
+    {
+      "file": "images/work-23-2.jpg",
+      "work": 23,
+      "pdfPage": 79,
+      "embeddedImageIndex": 1,
+      "width": 931,
+      "height": 300
+    },
+    {
+      "file": "images/work-23-3.jpg",
+      "work": 23,
+      "pdfPage": 80,
+      "embeddedImageIndex": 0,
+      "width": 850,
+      "height": 1212
+    },
+    {
+      "file": "images/work-24-1.jpg",
+      "work": 24,
+      "pdfPage": 88,
+      "embeddedImageIndex": 0,
+      "width": 588,
+      "height": 278
+    },
+    {
+      "file": "images/work-25-1.jpg",
+      "work": 25,
+      "pdfPage": 97,
+      "embeddedImageIndex": 0,
+      "width": 900,
+      "height": 675
+    },
+    {
+      "file": "images/work-25-2.jpg",
+      "work": 25,
+      "pdfPage": 96,
+      "embeddedImageIndex": 0,
+      "width": 752,
+      "height": 1600
+    },
+    {
+      "file": "images/work-25-3.jpg",
+      "work": 25,
+      "pdfPage": 96,
+      "embeddedImageIndex": 1,
+      "width": 1255,
+      "height": 958
+    }
+  ]
+}
