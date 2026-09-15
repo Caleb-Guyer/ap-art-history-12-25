@@ -1,9 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {WORKS} from '../dist/data.js';
+import {WORKS,shortDetail} from '../dist/data.js';
 import {checkAnswer,getWork,makeQuiz,finishQuiz,quizScore,quizProgress,defaultStore,recordRecall,needsPractice,sanitizeStore,hasPhrase,STUDY_FIELDS,FACT_FIELDS,makeChoices,makeStudyQuestions,dateIntervals,dateInRange,choiceAnswer} from '../dist/engine.js';
 
 test('all 14 canonical titles, material lines, and dates are recognized',()=>{for(const w of WORKS)for(const field of ['name','material','date'])assert.equal(checkAnswer(w,field,w[field]).status,'correct',`${w.id}: ${field}`);});
+test('concise identification answers are accepted without parenthetical detail',()=>{
+ for(const w of WORKS)for(const field of ['name','material','date','location','artist','culture']){const short=shortDetail(choiceAnswer(w,field));assert.ok(!/[()]/.test(short),`${w.id}: ${field}`);assert.equal(checkAnswer(w,field,short).status,'correct',`${w.id}: ${field}: ${short}`);}
+ assert.equal(shortDetail(getWork(25).name),'Lamassu');
+ assert.equal(shortDetail(getWork(12).location),'Uruk, Iraq');
+ assert.equal(shortDetail(getWork(21).material),'Sandstone and red granite');
+ assert.equal(shortDetail(getWork(21).artist),'Senenmut');
+ for(const w of WORKS)for(const field of STUDY_FIELDS){const q=makeChoices(w,field);assert.equal(new Set(q.options.map(shortDetail)).size,4,`${w.id}: ${field}`);}
+});
 test('multi-material answers require every component',()=>{
  const cases=[[14,'gypsum','shell'],[14,'gypsum inlaid with shell and limestone','black limestone'],[16,'shell, lapis lazuli and red limestone','wood'],[16,'wood inlaid with lapis lazuli and shell','red limestone'],[20,'cut sandstone','mud brick'],[21,'sandstone','red granite'],[23,'gold','enamel'],[23,'gold inlaid with semiprecious stones','enamel']];
  for(const [id,input,missing] of cases){const result=checkAnswer(getWork(id),'material',input);assert.notEqual(result.status,'correct');assert.ok(result.missing.includes(missing),`${id}: ${missing}`);}

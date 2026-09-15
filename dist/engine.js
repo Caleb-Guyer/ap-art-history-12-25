@@ -1,4 +1,4 @@
-import {WORKS} from './data.js?v=4';
+import {WORKS,shortDetail} from './data.js?v=5';
 
 export const FACT_FIELDS=['date','location','artist','culture'];
 export const STUDY_FIELDS=['name','material','date','location','artist','culture','context'];
@@ -23,7 +23,7 @@ export function makeChoices(work,field,random=Math.random){
  else if(field==='date')pool=WORKS.filter(other=>!dateIntervals(other).some(([a,b])=>dateIntervals(work).some(([c,d])=>a<=d&&c<=b))).map(other=>other.date);
  else pool=WORKS.filter(other=>other.id!==work.id).map(other=>choiceAnswer(other,field));
  // Equivalent materials, locations and culture labels must not create two valid choices.
- pool=[...new Set(pool)].filter(value=>normalize(value)!==normalize(correct)&&checkAnswer(work,field,value).status!=='correct');
+ pool=[...new Map(pool.map(value=>[normalize(shortDetail(value)),value])).values()].filter(value=>normalize(shortDetail(value))!==normalize(shortDetail(correct))&&checkAnswer(work,field,value).status!=='correct'&&checkAnswer(work,field,shortDetail(value)).status!=='correct');
  const options=shuffle([correct,...shuffle(pool,random).slice(0,3)],random);
  if(options.length!==4)throw new Error(`Not enough distinct choices: ${work.id} ${field}`);
  return {options,answer:correct};
@@ -38,7 +38,7 @@ export function checkAnswer(work,field,answer){
  const input=normalize(answer);
  if(!input)return status('incorrect','No answer entered.');
  if(field==='name'){
-  const candidates=[work.name,...work.nameAliases].map(normalize);
+  const candidates=[work.name,work.shortName,...work.nameAliases].map(normalize);
   if(candidates.includes(input)||candidates.some(c=>input.replace(/^the /,'')===c.replace(/^the /,'')))return status('correct','Title recognized.');
   return status('review','Compare with the full title. A spelling variation or shortened title needs your judgment.');
  }

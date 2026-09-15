@@ -186,6 +186,23 @@ export const WORKS = [
  }
 ];
 
+// Short study labels keep the complete source wording and accepted aliases intact.
+const shortLocations={
+ 12:'Uruk, Iraq',14:'Eshnunna, Iraq',16:'Ur, Iraq',17:'Giza, Egypt',
+ 18:'Menkaure’s Valley Temple, Giza, Egypt',19:'Babylon, Iraq',20:'Karnak, Egypt',
+ 21:'Deir el-Bahri, Egypt',22:'Amarna, Egypt',23:'Valley of the Kings, Egypt',
+ 25:'Dur-Sharrukin, Iraq'
+};
+const shortDetails=new Map(WORKS.flatMap(w=>[
+ [w.name,w.shortName],
+ [w.location,shortLocations[w.id]??w.location],
+ [w.artist,w.id===21?'Senenmut':'Unknown'],
+ [w.material,w.id===21?'Sandstone and red granite':w.material]
+]));
+shortDetails.set('Unknown / unrecorded','Unknown');
+shortDetails.set('Senenmut (traditionally attributed)','Senenmut');
+export function shortDetail(value){const text=String(value??'');return shortDetails.get(text)??text.replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();}
+
 export const VOCAB = [
  ['Ziggurat','A raised, stepped platform supporting a temple.','White Temple · 12'],
  ['Cella','The principal sacred room of a temple.','White Temple · 12'],

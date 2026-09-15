@@ -11,6 +11,7 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 - Full, seven-work, and five-work quizzes; optional timer and alternate views.
 - Material checking that catches omitted inlays, supports, colors, and surface treatments.
 - Suggested marks for typed answers, automatic multiple-choice scoring, and adjustable grading before saving.
+- Concise study answers and choices omit parenthetical explanations; the shorter forms receive credit. Full source wording and aliases stay available in the data, and essential material components remain required.
 - Missed-answer practice and device-local saved sessions; progress import/export.
 - Material comparisons, dates, vocabulary, and printable identification details.
 - Keyboard, mobile, and reduced-motion support. No sign-in or API key required.
