@@ -1,4 +1,27 @@
 /* A quiet working surface: artwork, recall, and the controls needed now. */
+.study-selects{display:flex;gap:10px;flex-wrap:wrap}
+.study-options{flex-wrap:wrap}
+.choice-list{display:grid;gap:10px}
+.choice-button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border:1px solid #cbd4db;border-radius:6px;background:white;color:var(--ink);font:inherit;font-size:1rem;line-height:1.4;cursor:pointer}
+.choice-button:hover:not(:disabled){border-color:var(--accent);background:#f3f7f9}
+.choice-button.is-selected{border-color:var(--ink);background:#eaf0f4}
+.choice-button:disabled{opacity:1;cursor:default}
+.choice-button.is-correct{border-color:#36725b;background:#edf7f1;color:#24523d}
+.choice-button.is-wrong{border-color:#b96253;background:#fff1ed;color:#7b382d}
+.choice-letter{font-size:.875rem;color:var(--muted);flex:0 0 18px}
+.choice-mark{margin-left:auto;font-size:1.2rem}
+.choice-feedback{font-size:.94rem;line-height:1.5;margin:18px 0 0}
+.fact-input-label{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}
+.fact-input-label label{margin:0!important;white-space:nowrap}
+.fact-input-label select{width:auto;max-width:70%;padding:8px 10px;font-size:.94rem}
+.quiz-parts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.part-button{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);padding:5px 0;margin-right:12px;font:inherit;font-size:.875rem;cursor:pointer}
+.part-button.active{border-color:var(--accent);color:var(--ink)}
+.quiz-setup .focus-select{width:100%;min-width:0}
+.review-detail-select{padding:18px}.review-detail-select select{max-width:260px}
+@media(max-width:780px){.minimal-toolbar{align-items:flex-start}.study-options{gap:12px}.study-selects{gap:8px}.toolbar-actions{padding-top:6px}.study-selects .focus-select{min-width:0;width:auto;max-width:100%}.setup-fields .focus-select{font-size:.875rem;padding:10px}.choice-button{padding:12px}.fact-input-label{align-items:flex-start;flex-wrap:wrap}.fact-input-label select{max-width:100%}}
+@media(max-width:450px){.study-options{flex:1}.study-selects{width:100%}.study-selects .focus-select{flex:1 1 140px}.minimal-toolbar .toolbar-actions{flex-direction:column;gap:5px}.quiz-setup .setup-fields{grid-template-columns:1fr}.quiz-setup .setup-fields .field{margin:0}.quiz-setup .setup-fields{gap:18px}}
+@media print{.review-detail-select{display:none}}
 body{background:#f7f8fa}
 .shell{display:flex;flex-direction:column;min-height:100dvh}
 .topbar{display:flex;align-items:center;gap:36px;width:min(1250px,100%);padding:0 32px;height:86px;margin:0 auto;border-bottom:1px solid var(--line)}

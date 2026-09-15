@@ -1,4 +1,8 @@
-import {WORKS} from './data.js';
+import {WORKS} from './data.js?v=4';
+
+export const FACT_FIELDS=['date','location','artist','culture'];
+export const STUDY_FIELDS=['name','material','date','location','artist','culture','context'];
+export const FIELD_LABELS={name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period',context:'Context'};
 
 export const STORAGE_KEY='ap-art-history-12-25-v1';
 export const normalize=value=>String(value??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/tutankham[eo]n/g,'tutankhamun').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
@@ -8,6 +12,27 @@ export function getWork(id){return WORKS.find(work=>work.id===Number(id));}
 export function answerFor(work,field){if(field==='culture')return `${work.culture} · ${work.period}`;if(field==='context')return work.goTo;return work[field]??'';}
 const status=(state,message,extra={})=>({status:state,message,...extra});
 const materialVocabulary=['mud brick','mudbrick','gypsum','shell','lapis lazuli','red limestone','black limestone','greywacke','graywacke','alabaster','basalt','diorite','granite','sandstone','limestone','wood','gold','silver','bronze','marble','papyrus','enamel','semiprecious stones','ivory','terracotta','clay','oil paint'];
+
+export function dateIntervals(work){return work.dateNumbers.flatMap(list=>work.id===20?list.map(n=>[n,n]):[[Math.min(...list),Math.max(...list)]]);}
+export function dateInRange(work,year){return Number.isInteger(year)&&dateIntervals(work).some(([lo,hi])=>year>=lo&&year<=hi);}
+export function choiceAnswer(work,field){return field==='artist'?(work.id===21?'Senenmut (traditionally attributed)':'Unknown / unrecorded'):answerFor(work,field);}
+export function makeChoices(work,field,random=Math.random){
+ const correct=choiceAnswer(work,field);
+ let pool;
+ if(field==='artist')pool=['Unknown / unrecorded','Senenmut (traditionally attributed)','Imhotep','Thutmose'];
+ else if(field==='date')pool=WORKS.filter(other=>!dateIntervals(other).some(([a,b])=>dateIntervals(work).some(([c,d])=>a<=d&&c<=b))).map(other=>other.date);
+ else pool=WORKS.filter(other=>other.id!==work.id).map(other=>choiceAnswer(other,field));
+ // Equivalent materials, locations and culture labels must not create two valid choices.
+ pool=[...new Set(pool)].filter(value=>normalize(value)!==normalize(correct)&&checkAnswer(work,field,value).status!=='correct');
+ const options=shuffle([correct,...shuffle(pool,random).slice(0,3)],random);
+ if(options.length!==4)throw new Error(`Not enough distinct choices: ${work.id} ${field}`);
+ return {options,answer:correct};
+}
+export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode='type',randomize=false,random=Math.random}={}){
+ const fields=mode==='choice'&&focus==='all'?STUDY_FIELDS:[focus];
+ const questions=ids.flatMap(id=>fields.map(field=>({id,field,...(mode==='choice'?makeChoices(getWork(id),field,random):{})})));
+ return randomize?shuffle(questions,random):questions;
+}
 
 export function checkAnswer(work,field,answer){
  const input=normalize(answer);
@@ -28,16 +53,14 @@ export function checkAnswer(work,field,answer){
   return status(matched.length?'partial':'incorrect',`Still needed: ${missing.join(' · ')}.`,{matched,missing});
  }
  if(field==='date'){
-  const nums=(String(answer).match(/\d+/g)??[]).map(Number);
+  const nums=(String(answer).replace(/(\d),(?=\d{3}\b)/g,'$1').match(/\d+/g)??[]).map(Number);
   const era=String(answer).replace(/\./g,'').toUpperCase();
-  if(/\b(?:AD|CE)\b/.test(era)&&!/\bBCE\b/.test(era))return status('incorrect','These works date to BCE, not CE.');
-  if(!work.dateNumbers.some(list=>list.length===nums.length&&list.every((n,i)=>n===nums[i])))return status('review','Compare the complete date or range with the course answer.');
-  if(!/\bBC(?:E)?\b/.test(era))return status('partial','The numbers match. Add BCE (or BC) to make the date complete.');
-  if(work.id===20&&hasPhrase(input,'temple')&&hasPhrase(input,'hall')){
-   const original=String(answer).toLowerCase();
-   if(/temple\s*:?\s*(?:c\.?\s*)?1250/.test(original)||/hall\s*:?\s*(?:c\.?\s*)?1550/.test(original))return status('incorrect','The labels are reversed: temple 1550 BCE, hall 1250 BCE.');
-  }
-  return status('correct','Date matches an accepted course version.');
+  if(/\b(?:AD|CE)\b/.test(era))return status('incorrect','These works date to BCE.');
+  if(/\b(or|not|before|after|century|centuries)\b/.test(input)||nums.length<1||nums.length>2)return status('review','Enter a year or range from the listed dates.');
+  if(work.id===20&&(/temple\s*:?\s*(?:c\.?\s*)?1250/i.test(answer)||/hall\s*:?\s*(?:c\.?\s*)?1550/i.test(answer)))return status('incorrect','Temple: 1550 BCE. Hall: 1250 BCE.');
+  const accepted=nums.length===1?dateInRange(work,nums[0]):work.id===20?nums.includes(1550)&&nums.includes(1250):dateIntervals(work).some(([lo,hi])=>nums.every(n=>n>=lo&&n<=hi));
+  if(!accepted)return status('incorrect',work.id===20?'Use 1550 BCE for the temple or 1250 BCE for the hall.':'Outside the accepted date range.');
+  return status('correct',/\bBC(?:E)?\b/.test(era)?'Accepted date.':'Accepted date (BCE).');
  }
  if(field==='location'){
   if(work.id===19){
@@ -70,32 +93,40 @@ export function checkAnswer(work,field,answer){
  return status('review','Compare your answer with the reference.');
 }
 
-export function defaultStore(){return {version:1,stats:{},history:[],focus:'material',study:null,quiz:null};}
+export function defaultStore(){return {version:1,stats:{},history:[],focus:'material',mode:'type',study:null,quiz:null};}
 export function sanitizeStore(raw){
  const clean=defaultStore();if(!raw||typeof raw!=='object'||raw.version!==1)return clean;
  const fields=['all','name','material','date','location','artist','culture','context'];
  clean.focus=fields.includes(raw.focus)?raw.focus:'material';
+ clean.mode=raw.mode==='choice'?'choice':'type';
  for(const w of WORKS){const saved=raw.stats?.[w.id];if(!saved||typeof saved!=='object')continue;clean.stats[w.id]={};for(const f of fields){const v=saved[f];if(v&&typeof v==='object'){clean.stats[w.id][f]={seen:Math.max(0,Math.min(100000,Number(v.seen)||0)),correct:Math.max(0,Math.min(100000,Number(v.correct)||0)),streak:Math.max(0,Math.min(100000,Number(v.streak)||0)),lastCorrect:v.lastCorrect===true};}}}
  clean.history=Array.isArray(raw.history)?raw.history.slice(0,30).filter(x=>x&&typeof x==='object'):[];
  const s=raw.study;
  if(s&&fields.includes(s.focus)&&Array.isArray(s.queue)&&s.queue.length>0&&s.queue.length<=100&&s.queue.every(id=>getWork(id))&&Number.isInteger(s.index)&&s.index>=0&&s.index<=s.queue.length){
   clean.study={...s,typed:typeof s.typed==='string'?s.typed.slice(0,3000):'',again:Array.isArray(s.again)?s.again.filter(id=>getWork(id)):[],correct:Number(s.correct)||0,filter:s.filter==='missed'?'missed':'all',revealed:!!s.revealed,image:Number.isInteger(s.image)?s.image:0};
+  const valid=Array.isArray(s.questions)&&s.questions.length===s.queue.length&&s.questions.every((q,i)=>q?.id===s.queue[i]&&fields.includes(q.field)&&(s.mode!=='choice'||validChoices(getWork(q.id),q.field,q)));
+  if(valid){clean.study.mode=s.mode==='choice'?'choice':'type';clean.study.responses=s.responses&&typeof s.responses==='object'?s.responses:{};clean.study.ratings=s.ratings&&typeof s.ratings==='object'?s.ratings:{};}
+  else if(s.mode==='choice')clean.study=null;
+  else{clean.study.mode='type';clean.study.responses={};clean.study.questions=s.queue.map(id=>({id,field:s.focus}));clean.study.ratings=Object.fromEntries(s.queue.flatMap((id,i)=>typeof s.ratings?.[id]==='boolean'?[[i,s.ratings[id]]]:[]));}
  }
  const q=raw.quiz;
  if(q&&['active','review'].includes(q.status)&&Array.isArray(q.questions)&&q.questions.length>0&&q.questions.length<=14&&new Set(q.questions.map(x=>x.id)).size===q.questions.length&&q.questions.every(x=>getWork(x.id)&&Number.isInteger(x.image)&&getWork(x.id).images[x.image]?.quiz)&&Number.isInteger(q.index)&&q.index>=0&&q.index<q.questions.length&&Number.isFinite(q.startedAt)){
-  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):''};}
+  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:FACT_FIELDS.includes(a?.factField)?a.factField:null};}
   const grades={};if(q.status==='review'){for(const question of q.questions){const g=q.grades?.[question.id]??{};grades[question.id]={};for(const field of ['name','material','fact'])grades[question.id][field]=g[field]===true?true:g[field]===false?false:null;}}
-  clean.quiz={...q,answers,grades,status:q.status,timerMinutes:[0,10,15,20].includes(q.timerMinutes)?q.timerMinutes:0,finishedAt:Number.isFinite(q.finishedAt)?q.finishedAt:null,recorded:!!q.recorded};
+  clean.quiz={...q,answers,grades,status:q.status,mode:q.mode==='choice'?'choice':'type',part:[0,1,2].includes(q.part)?q.part:0,timerMinutes:[0,10,15,20].includes(q.timerMinutes)?q.timerMinutes:0,finishedAt:Number.isFinite(q.finishedAt)?q.finishedAt:null,recorded:!!q.recorded};
+  if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...FACT_FIELDS])if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);}
  }
  return clean;
 }
 export function recordRecall(store,id,field,correct){store.stats[id]??={};const stat=store.stats[id][field]??{seen:0,correct:0,streak:0};store.stats[id][field]={seen:stat.seen+1,correct:stat.correct+(correct?1:0),streak:correct?stat.streak+1:0,lastCorrect:correct};}
 export function needsPractice(store,id,field){const stats=store.stats[id]??{};if(field==='all')return Object.values(stats).some(s=>s.seen>0&&!s.lastCorrect);return stats[field]?.seen>0&&!stats[field].lastCorrect;}
 export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.id]?.material?.streak??0)>=2).length;}
-export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim();}).length;}
-export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,random=Math.random}={}){
- const questions=shuffle(ids,random).slice(0,count).map(id=>{const work=getWork(id);const views=work.images.map((im,i)=>im.quiz?i:null).filter(i=>i!==null);return {id,image:alternateViews?views[Math.floor(random()*views.length)]:0};});
- return {id:`quiz-${Date.now()}`,status:'active',questions,index:0,answers:{},grades:{},startedAt:Date.now(),finishedAt:null,timerMinutes,alternateViews,recorded:false};
+export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&FACT_FIELDS.includes(a.factField);}).length;}
+export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){
+ const questions=shuffle(ids,random).slice(0,count).map(id=>{const work=getWork(id);const views=work.images.map((im,i)=>im.quiz?i:null).filter(i=>i!==null);return {id,image:alternateViews?views[Math.floor(random()*views.length)]:0,...(mode==='choice'?{choices:Object.fromEntries(['name','material',...FACT_FIELDS].map(f=>[f,makeChoices(work,f,random)]))}:{})};});
+ const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:FACT_FIELDS.includes(factField)?factField:'date'}]));
+ return {id:`quiz-${Date.now()}`,status:'active',questions,index:0,part:0,mode,answers,grades:{},startedAt:Date.now(),finishedAt:null,timerMinutes,alternateViews,recorded:false};
 }
-export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id);const a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const field of ['name','material']){const result=checkAnswer(w,field,a[field]??'');quiz.grades[q.id][field]=result.status==='correct'?true:result.status==='review'?null:false;}quiz.grades[q.id].fact=a.fact?.trim()?null:false;}return quiz;}
+function validChoices(work,field,q){return STUDY_FIELDS.includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
+export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id),a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const key of ['name','material','fact']){const field=key==='fact'?a.factField:key;if(!a[key]?.trim()){quiz.grades[q.id][key]=false;continue;}if(!field){quiz.grades[q.id][key]=null;continue;}if(quiz.mode==='choice'){quiz.grades[q.id][key]=a[key]===choiceAnswer(w,field);continue;}const result=checkAnswer(w,field,a[key]);quiz.grades[q.id][key]=result.status==='correct'?true:result.status==='review'?null:false;}}return quiz;}
 export function quizScore(quiz){let correct=0,pending=0;for(const question of quiz.questions){for(const field of ['name','material','fact']){const grade=quiz.grades?.[question.id]?.[field];if(grade===true)correct++;else if(grade!==false)pending++;}}return {correct,pending,total:quiz.questions.length*3};}

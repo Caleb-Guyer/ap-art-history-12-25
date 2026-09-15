@@ -5,13 +5,14 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 ## Features
 
 - Eight study categories: all details, names, materials, dates, locations, artists, culture/period, and context.
+- Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 98 work/category combinations, with instant feedback and missed-question practice.
 - Fourteen works with thirty course images, including alternate views and associated objects.
-- A mock quiz: identify the image with its **name, complete material line, and one other fact**.
+- A typed or multiple-choice mock quiz: identify the image with its **name, complete material line, and a chosen date, location, artist, or culture/period**. Change the third category for each work.
 - Full, seven-work, and five-work quizzes; optional timer and alternate views.
 - Material checking that catches omitted inlays, supports, colors, and surface treatments.
-- Conservative suggested marks, self-marked extra facts, and adjustable grading before saving.
+- Suggested marks for typed answers, automatic multiple-choice scoring, and adjustable grading before saving.
 - Missed-answer practice and device-local saved sessions; progress import/export.
-- Material comparisons, dates, vocabulary, and a printable extra-fact sheet.
+- Material comparisons, dates, vocabulary, and printable identification details.
 - Keyboard, mobile, and reduced-motion support. No sign-in or API key required.
 
 ## Run locally
@@ -43,7 +44,11 @@ The app preserves course material terminology and explicitly lists conflicting s
 
 The gold death mask on slide 80 is a separate object from Tutankhamun’s innermost coffin. It appears as a related study image and is excluded from the mock quiz. Plans with labels are also excluded from quiz sampling. Alternate views of Hatshepsut’s associated sculpture still refer to the full assigned-work material line.
 
-Practice marking is conservative and deterministic; it uses no AI service. Each quiz has three points per work. Blank fields receive zero. Complete recognized names/materials get suggested credit; ambiguous wording remains pending for review. Extra facts always require self-marking and should add information beyond the name and material. Final results can be saved only after every pending mark is resolved.
+Practice marking is deterministic and uses no AI service. Each quiz has three points per work. Blank fields receive zero. Recognized typed answers receive suggested credit; ambiguous wording remains pending for review. The third answer is checked against the selected category, rather than an arbitrary contextual fact. Final results can be saved only after every pending mark is resolved.
+
+Any individual year within a listed course range is accepted, including the endpoints and alternative slide ranges. An omitted era is interpreted as BCE; CE/AD is rejected. A smaller range is accepted when both endpoints fall within one listed range. Karnak has two separate milestones (temple 1550 BCE; hall 1250 BCE), so years between those milestones are not accepted. Multiple-choice date distractors do not overlap any accepted range. Equivalent material and artist options are deduplicated.
+
+Previous saved answers and progress remain available. Older quizzes without a third-answer category prompt for one when resumed; already reviewed legacy results retain their marks.
 
 ## Privacy
 

@@ -1,14 +1,14 @@
 // Course wording comes first. Slide references are 1-based PDF pages.
 // Rulers, donors, and depicted figures are not automatically the artists.
 export const FIELDS = {
-  all: {label:'All details', prompt:'What do you remember?', help:'Recall the name, full material line, and at least one other fact.'},
+  all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
   name: {label:'Names', prompt:'Which artwork is this?', help:'Give the title of the assigned work. Include the person or place that identifies it.'},
   material: {label:'Materials', prompt:'What is it made of?', help:'Give the complete material line for the assigned work, including inlay and surface treatments.'},
-  date: {label:'Dates', prompt:'When was it made?', help:'Include the date or full range and BCE. For Karnak, give both the temple and hall dates.'},
+  date: {label:'Dates', prompt:'When was it made?', help:'Any year within a listed range is accepted. Karnak has separate temple and hall dates.'},
   location: {label:'Locations', prompt:'Where did it come from?', help:'Recall the original site and modern country, rather than just the museum.'},
   artist: {label:'Artists', prompt:'Who made it?', help:'Distinguish the artist or architect from a ruler, patron, or person depicted.'},
   culture: {label:'Culture & period', prompt:'Which culture and period?', help:'Identify the civilization. For Egyptian works, add the kingdom or period.'},
-  context: {label:'Context', prompt:'What is one specific fact?', help:'Recall its purpose, meaning, or a distinctive visual feature. Make it specific to this work.'}
+  context: {label:'Context', prompt:'What is its context?', help:'Recall its purpose, meaning, or a distinctive visual feature. Make it specific to this work.'}
 };
 const I=(id,count,labels,extras={})=>Array.from({length:count},(_,i)=>({src:`images/work-${id}-${i+1}.jpg`,label:labels[i],quiz:i===0,...extras[i]}));
 const unknown='Unrecorded artist(s)';
