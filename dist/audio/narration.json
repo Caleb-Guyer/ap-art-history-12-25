@@ -1,0 +1,324 @@
+[
+  {
+    "id": 12,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "White Temple and its Ziggurat",
+        "spoken": "White Temple and its Ziggurat"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Mud brick",
+        "spoken": "Mud brick"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "3000 BCE",
+        "spoken": "Three thousand B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Palette of King Narmer",
+        "spoken": "Palette of King Narmer"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Greywacke",
+        "spoken": "gray wack"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "3000 BCE",
+        "spoken": "Three thousand B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Statues of Votive Figures",
+        "spoken": "Statues of Votive Figures"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Gypsum inlaid with shell and black limestone",
+        "spoken": "Gypsum inlaid with shell and black limestone"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "2700 BCE",
+        "spoken": "Twenty seven hundred B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Seated Scribe",
+        "spoken": "Seated Scribe"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Painted limestone",
+        "spoken": "Painted limestone"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "2500 BCE",
+        "spoken": "Twenty five hundred B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Standard of Ur",
+        "spoken": "Standard of Oor"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Wood inlaid with shell, lapis lazuli, and red limestone",
+        "spoken": "Wood inlaid with shell, lap iss laz uh lee, and red limestone"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "2500 BCE",
+        "spoken": "Twenty five hundred B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Great Pyramids and Great Sphinx",
+        "spoken": "Great Pyramids and Great Sphinx"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Cut limestone",
+        "spoken": "Cut limestone"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "2500 BCE",
+        "spoken": "Twenty five hundred B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "King Menkaure and Queen",
+        "spoken": "King Men cow ray and Queen"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Greywacke",
+        "spoken": "gray wack"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Giza, Egypt",
+        "spoken": "Giza, Egypt"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Law Code of Hammurabi",
+        "spoken": "Law Code of Hammurabi"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Basalt",
+        "spoken": "Basalt"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "1750 BCE",
+        "spoken": "Seventeen fifty B. C. E."
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Temple of Amun-Re",
+        "spoken": "Temple of Ah moon Ray"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Cut sandstone and mud brick",
+        "spoken": "Cut sandstone and mud brick"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Egyptian, New Kingdom",
+        "spoken": "Egyptian, New Kingdom"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Mortuary Temple of Hatshepsut",
+        "spoken": "Mortuary Temple of Hat shep soot"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Sandstone and red granite",
+        "spoken": "Sandstone and red granite"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Egyptian, New Kingdom",
+        "spoken": "Egyptian, New Kingdom"
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Akhenaten, Nefertiti, and Three Daughters",
+        "spoken": "Ah keh nah ten, Nef er tee tee, and Three Daughters"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Limestone",
+        "spoken": "Limestone"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Amarna, Egypt",
+        "spoken": "Amarna, Egypt"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Innermost Coffin of Tutankhamun",
+        "spoken": "Innermost Coffin of Toot ahn kah moon"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Gold with inlay of enamel and semiprecious stones",
+        "spoken": "Gold with inlay of enamel and semiprecious stones"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Egyptian, New Kingdom",
+        "spoken": "Egyptian, New Kingdom"
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Last Judgment of Hunefer",
+        "spoken": "Last Judgment of Hoo neh fer"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Painted papyrus scroll",
+        "spoken": "Painted papyrus scroll"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "Egypt",
+        "spoken": "Egypt"
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "parts": [
+      {
+        "field": "name",
+        "label": "Name",
+        "text": "Lamassu",
+        "spoken": "Lah mah soo"
+      },
+      {
+        "field": "material",
+        "label": "Material",
+        "text": "Alabaster",
+        "spoken": "Alabaster"
+      },
+      {
+        "field": "recommendation",
+        "label": "Recommendation",
+        "text": "720 BCE",
+        "spoken": "Seven twenty B. C. E."
+      }
+    ]
+  }
+]

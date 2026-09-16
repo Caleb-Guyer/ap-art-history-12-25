@@ -1,4 +1,4 @@
-import {WORKS,FIELDS,RECOMMENDATIONS,shortDetail} from './data.js?v=9';
+import {WORKS,FIELDS,RECOMMENDATIONS,shortDetail} from './data.js?v=10';
 
 export const FACT_FIELDS=['date','location','culture'];
 export const STUDY_FIELDS=['name','material','date','location','culture'];

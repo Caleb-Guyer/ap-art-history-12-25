@@ -1,4 +1,24 @@
 /* A quiet working surface: artwork, recall, and the controls needed now. */
+.audio-toolbar .focus-select{width:min(550px,calc(100% - 65px));min-width:0}
+.audio-surface .art-stage{height:100%;min-height:460px}
+.audio-surface .audio-title{font-size:1.85rem!important;line-height:1.2;margin-bottom:20px}
+.audio-surface .fact-row{display:block;padding:13px 0}
+.audio-surface .fact-row dt{margin-bottom:5px;font-size:.8rem}
+.audio-surface .fact-row dd{font-size:1rem;line-height:1.5}
+.audio-player{margin-top:auto;padding-top:28px}
+.audio-transport{display:flex;align-items:center;gap:12px}
+.audio-transport .primary-button{min-width:94px}
+.audio-transport .text-button{padding:10px}
+.audio-transport #audio-status{margin-left:auto;font-size:.8rem}
+.audio-timeline{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:.75rem;font-variant-numeric:tabular-nums}
+.audio-timeline input{width:100%;min-width:0;accent-color:var(--accent);cursor:pointer;padding:0;box-shadow:none}
+.audio-timeline input:disabled{cursor:default}
+.audio-settings{display:flex;align-items:center;gap:10px;font-size:.875rem}
+.audio-settings select{width:auto;padding:6px 8px;font-size:.875rem}
+.audio-settings .check-row{margin-left:auto}
+.audio-error{font-size:.875rem;color:#963d2f;margin-top:16px}
+@media(max-width:780px){.audio-surface .art-stage{height:285px;min-height:0}.audio-surface .audio-title{font-size:1.7rem!important}.audio-player{padding-top:20px}}
+@media(min-width:451px) and (max-width:650px){.topbar{flex-wrap:wrap!important;height:109px!important;align-content:center;row-gap:7px!important}.topbar .brand{width:100%;flex:none!important}.topbar nav{height:43px!important;justify-content:space-between;width:100%;gap:20px!important}}
 .study-selects{display:flex;gap:10px;flex-wrap:wrap}
 .study-options{flex-wrap:wrap}
 .choice-list{display:grid;gap:10px}

@@ -10,6 +10,7 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 - Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 70 eligible work/category combinations, with instant feedback and missed-question practice.
 - Fourteen works with thirty course images, including alternate views and associated objects.
 - A typed or multiple-choice mock quiz: identify the image with its **name, complete material line, and a chosen date, location, or culture/period**. Change the third category for each work. Hatshepsut’s location question accepts either Deir el-Bahri, Egypt or Senenmut. Both appear as correct multiple-choice options; selecting either earns one point.
+- Audio mode cycles through all 14 works, reading each name, complete material answer, and recommendation. Includes play/pause, previous/next, seeking, playback speed, and repeat. Audio pauses when leaving the Audio tab and never changes study scores.
 - Full, seven-work, and five-work quizzes; optional timer and alternate views.
 - Material checking that catches omitted inlays, supports, colors, and surface treatments.
 - Suggested marks for typed answers, automatic multiple-choice scoring, and adjustable grading before saving.
@@ -57,7 +58,11 @@ Previous saved answers and progress remain available. Older quizzes without a th
 
 ## Privacy
 
-Progress and typed answers stay in local browser storage. There is no account, backend database, analytics, or shared class leaderboard. Each visitor has separate progress. Export a progress file to move it between devices. A timer continues while a quiz is saved and exited.
+Progress and typed answers stay in local browser storage. There is no account, backend database, analytics, or shared class leaderboard. Audio uses bundled speech recordings with no microphone permission, API key, or speech service at playback time. Each visitor has separate progress. Export a progress file to move it between devices. A timer continues while a quiz is saved and exited.
+
+## Audio assets
+
+The WAV clips in `dist/audio/` use the same concise names, materials, and recommendations as the study interface. `narration.json` records the displayed text and pronunciation wording. To update recordings on Windows, run `node scripts/audio-input.mjs TEMP_JSON_PATH`, then `scripts/generate-audio.ps1 -InputJson TEMP_JSON_PATH`. This uses the installed Microsoft Zira Desktop voice; the committed recordings play on other platforms through standard browser audio. The content check detects stale narration.
 
 ## Image rights
 
