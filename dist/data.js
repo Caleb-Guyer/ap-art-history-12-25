@@ -3,11 +3,28 @@
 export const FIELDS = {
   all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
   details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, and culture and period. Senenmut is accepted with the location of Hatshepsut’s temple.'},
+  recommendation: {label:'Recommendation', prompt:'What is the recommended detail?', help:'One short answer to memorize for each work.'},
   name: {label:'Names', prompt:'Which artwork is this?', help:'Give the title of the assigned work. Include the person or place that identifies it.'},
   material: {label:'Materials', prompt:'What is it made of?', help:'Give the complete material line for the assigned work, including inlay and surface treatments.'},
   date: {label:'Dates', prompt:'When was it made?', help:'Any year within a listed range is accepted. Karnak has separate temple and hall dates.'},
   location: {label:'Locations', prompt:'Where did it come from?', help:'Recall the original site and modern country, rather than just the museum.'},
   culture: {label:'Culture & period', prompt:'Which culture and period?', help:'Identify the civilization. For Egyptian works, add the kingdom or period.'}
+};
+export const RECOMMENDATIONS = {
+  12: {field:'date', answer:'3000 BCE'},
+  13: {field:'date', answer:'3000 BCE'},
+  14: {field:'date', answer:'2700 BCE'},
+  15: {field:'date', answer:'2500 BCE'},
+  16: {field:'date', answer:'2500 BCE'},
+  17: {field:'date', answer:'2500 BCE'},
+  18: {field:'location', answer:'Giza, Egypt'},
+  19: {field:'date', answer:'1750 BCE'},
+  20: {field:'culture', answer:'Egyptian, New Kingdom'},
+  21: {field:'culture', answer:'Egyptian, New Kingdom'},
+  22: {field:'location', answer:'Amarna, Egypt'},
+  23: {field:'culture', answer:'Egyptian, New Kingdom'},
+  24: {field:'location', answer:'Egypt'},
+  25: {field:'date', answer:'720 BCE'}
 };
 const I=(id,count,labels,extras={})=>Array.from({length:count},(_,i)=>({src:`images/work-${id}-${i+1}.jpg`,label:labels[i],quiz:i===0,...extras[i]}));
 const unknown='Unrecorded artist(s)';

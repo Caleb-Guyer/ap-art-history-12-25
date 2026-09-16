@@ -1,5 +1,5 @@
-import {WORKS,FIELDS,VOCAB,CONFUSIONS,shortDetail} from './data.js?v=8';
-import {STORAGE_KEY,normalize,shuffle,getWork,answerFor,checkAnswer,defaultStore,sanitizeStore,recordRecall,needsPractice,makeQuiz,quizProgress,finishQuiz,quizScore,FACT_FIELDS,FIELD_LABELS,makeStudyQuestions,choiceAnswer,studyFields,fieldAvailable,quizFactFields,fieldLabel,referenceFor,choiceIsCorrect} from './engine.js?v=8';
+import {WORKS,FIELDS,VOCAB,CONFUSIONS,shortDetail} from './data.js?v=9';
+import {STORAGE_KEY,normalize,shuffle,getWork,checkAnswer,defaultStore,sanitizeStore,recordRecall,needsPractice,makeQuiz,quizProgress,finishQuiz,quizScore,FACT_FIELDS,FIELD_LABELS,makeStudyQuestions,studyFields,fieldAvailable,quizFactFields,fieldLabel,referenceFor,choiceIsCorrect} from './engine.js?v=9';
 
 const root=document.querySelector('#app');
 let saved,storageAvailable=true;

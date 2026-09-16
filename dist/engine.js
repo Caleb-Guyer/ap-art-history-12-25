@@ -1,22 +1,22 @@
-import {WORKS,FIELDS,shortDetail} from './data.js?v=8';
+import {WORKS,FIELDS,RECOMMENDATIONS,shortDetail} from './data.js?v=9';
 
 export const FACT_FIELDS=['date','location','culture'];
 export const STUDY_FIELDS=['name','material','date','location','culture'];
 export const DETAIL_FIELDS=STUDY_FIELDS.filter(field=>field!=='name'&&field!=='material');
-export const FIELD_LABELS={details:'Details',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period'};
+export const FIELD_LABELS={details:'Details',recommendation:'Recommendation',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period'};
 export function hasKnownArtist(work){return work?.artistKnown===true;}
 export function fieldAvailable(work,field){return field!=='context'&&field!=='artist';}
 export function fieldLabel(work,field){return field==='location'&&hasKnownArtist(work)?'Location or artist':FIELD_LABELS[field];}
 export function referenceFor(work,field){return choiceAnswers(work,field).map(shortDetail).join(' or ');}
 export function studyFields(focus,work){const fields=focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:Object.hasOwn(FIELDS,focus)?[focus]:[];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
-export function quizFactFields(work){return work?FACT_FIELDS.filter(field=>fieldAvailable(work,field)):FACT_FIELDS;}
+export function quizFactFields(work){const fields=[...FACT_FIELDS,'recommendation'];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
 
 export const STORAGE_KEY='ap-art-history-12-25-v1';
 export const normalize=value=>String(value??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/tutankham[eo]n/g,'tutankhamun').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
 export function hasPhrase(text,phrase){return (` ${normalize(text)} `).includes(` ${normalize(phrase)} `);}
 export function shuffle(items,random=Math.random){const list=[...items];for(let i=list.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
 export function getWork(id){return WORKS.find(work=>work.id===Number(id));}
-export function answerFor(work,field){if(field==='culture')return `${work.culture} · ${work.period}`;if(field==='context')return work.goTo;return work[field]??'';}
+export function answerFor(work,field){if(field==='recommendation')return RECOMMENDATIONS[work.id].answer;if(field==='culture')return `${work.culture} · ${work.period}`;if(field==='context')return work.goTo;return work[field]??'';}
 const status=(state,message,extra={})=>({status:state,message,...extra});
 const materialVocabulary=['mud brick','mudbrick','gypsum','shell','lapis lazuli','red limestone','black limestone','greywacke','graywacke','alabaster','basalt','diorite','granite','sandstone','limestone','wood','gold','silver','bronze','marble','papyrus','enamel','semiprecious stones','ivory','terracotta','clay','oil paint'];
 
@@ -28,7 +28,11 @@ export function choiceIsCorrect(work,field,value){return choiceAnswers(work,fiel
 export function makeChoices(work,field,random=Math.random){
  const answers=choiceAnswers(work,field),correct=answers[0];
  let pool;
- if(field==='artist')pool=['Unknown / unrecorded','Senenmut (traditionally attributed)','Imhotep','Thutmose'];
+ if(field==='recommendation'){
+  const category=RECOMMENDATIONS[work.id].field;
+  pool=category==='date'?WORKS.flatMap(other=>other.dateNumbers.flat().map(year=>`${year} BCE`)):category==='location'?WORKS.map(other=>shortDetail(other.location)):['Egyptian, New Kingdom','Egyptian, Old Kingdom','Egyptian, Predynastic','Egyptian, Amarna period','Sumerian','Babylonian','Assyrian'];
+ }
+ else if(field==='artist')pool=['Unknown / unrecorded','Senenmut (traditionally attributed)','Imhotep','Thutmose'];
  else if(field==='date')pool=WORKS.filter(other=>!dateIntervals(other).some(([a,b])=>dateIntervals(work).some(([c,d])=>a<=d&&c<=b))).map(other=>other.date);
  else pool=WORKS.filter(other=>other.id!==work.id).map(other=>choiceAnswer(other,field));
  // Keep the intended answers and exclude equivalent distractors.
@@ -54,6 +58,7 @@ export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode
 export function checkAnswer(work,field,answer){
  const input=normalize(answer);
  if(!input)return status('incorrect','No answer entered.');
+ if(field==='recommendation')return checkAnswer(work,RECOMMENDATIONS[work.id].field,answer);
  if(field==='name'){
   const candidates=[work.name,work.shortName,...work.nameAliases].map(normalize);
   if(candidates.includes(input)||candidates.some(c=>input.replace(/^the /,'')===c.replace(/^the /,'')))return status('correct','Title recognized.');
@@ -149,7 +154,7 @@ export function sanitizeStore(raw){
  if(clean.study?.mode==='choice')clean.study.questions=clean.study.questions.map((question,index)=>refreshLocationChoices(getWork(question.id),question.field,question,clean.study.responses[index]));
  const q=raw.quiz;
  if(q&&['active','review'].includes(q.status)&&Array.isArray(q.questions)&&q.questions.length>0&&q.questions.length<=14&&new Set(q.questions.map(x=>x.id)).size===q.questions.length&&q.questions.every(x=>getWork(x.id)&&Number.isInteger(x.image)&&getWork(x.id).images[x.image]?.quiz)&&Number.isInteger(q.index)&&q.index>=0&&q.index<q.questions.length&&Number.isFinite(q.startedAt)){
-  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:[...FACT_FIELDS,'artist'].includes(a?.factField)?a.factField:null};if(a?.retiredFact)answers[question.id].retiredFact=a.retiredFact;if(q.status==='active'&&answers[question.id].factField==='artist'&&hasKnownArtist(getWork(question.id)))answers[question.id].factField='location';else if(q.status==='active'&&answers[question.id].factField==='artist'){answers[question.id].retiredFact={fact:answers[question.id].fact,factField:'artist'};answers[question.id].factField='date';answers[question.id].fact='';}}
+  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:[...quizFactFields(getWork(question.id)),'artist'].includes(a?.factField)?a.factField:null};if(a?.retiredFact)answers[question.id].retiredFact=a.retiredFact;if(q.status==='active'&&answers[question.id].factField==='artist'&&hasKnownArtist(getWork(question.id)))answers[question.id].factField='location';else if(q.status==='active'&&answers[question.id].factField==='artist'){answers[question.id].retiredFact={fact:answers[question.id].fact,factField:'artist'};answers[question.id].factField='date';answers[question.id].fact='';}}
   const grades={};if(q.status==='review'){for(const question of q.questions){const g=q.grades?.[question.id]??{};grades[question.id]={};for(const field of ['name','material','fact'])grades[question.id][field]=g[field]===true?true:g[field]===false?false:null;}}
   clean.quiz={...q,answers,grades,status:q.status,mode:q.mode==='choice'?'choice':'type',part:[0,1,2].includes(q.part)?q.part:0,timerMinutes:[0,10,15,20].includes(q.timerMinutes)?q.timerMinutes:0,finishedAt:Number.isFinite(q.finishedAt)?q.finishedAt:null,recorded:!!q.recorded};
   if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...quizFactFields(w)]){if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);if(q.status==='active')question.choices[f]=refreshLocationChoices(w,f,question.choices[f],answers[w.id].factField===f?answers[w.id].fact:null);}}
@@ -157,7 +162,7 @@ export function sanitizeStore(raw){
  return clean;
 }
 export function recordRecall(store,id,field,correct){store.stats[id]??={};const stat=store.stats[id][field]??{seen:0,correct:0,streak:0};store.stats[id][field]={seen:stat.seen+1,correct:stat.correct+(correct?1:0),streak:correct?stat.streak+1:0,lastCorrect:correct};}
-export function needsPractice(store,id,field){const stats=store.stats[id]??{},work=getWork(id);const fields=field==='all'?[...studyFields('all',work),'all','details']:field==='details'?[...studyFields('details',work),'details']:fieldAvailable(work,field)?[field]:[];return fields.some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);}
+export function needsPractice(store,id,field){const stats=store.stats[id]??{},work=getWork(id);const fields=field==='all'?[...studyFields('all',work),'all','details','recommendation']:field==='details'?[...studyFields('details',work),'details','recommendation']:fieldAvailable(work,field)?[field]:[];return fields.some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);}
 export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.id]?.material?.streak??0)>=2).length;}
 export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&quizFactFields(getWork(q.id)).includes(a.factField);}).length;}
 export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){
@@ -165,6 +170,6 @@ export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,t
  const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:factField==='artist'&&hasKnownArtist(getWork(q.id))?'location':quizFactFields(getWork(q.id)).includes(factField)?factField:'date'}]));
  return {id:`quiz-${Date.now()}`,status:'active',questions,index:0,part:0,mode,answers,grades:{},startedAt:Date.now(),finishedAt:null,timerMinutes,alternateViews,recorded:false};
 }
-function validChoices(work,field,q){return [...STUDY_FIELDS,'context','artist'].includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
+function validChoices(work,field,q){return [...STUDY_FIELDS,'recommendation','context','artist'].includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
 export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id),a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const key of ['name','material','fact']){const field=key==='fact'?a.factField:key;if(!a[key]?.trim()){quiz.grades[q.id][key]=false;continue;}if(!field){quiz.grades[q.id][key]=null;continue;}if(quiz.mode==='choice'){quiz.grades[q.id][key]=choiceIsCorrect(w,field,a[key]);continue;}const result=checkAnswer(w,field,a[key]);quiz.grades[q.id][key]=result.status==='correct'?true:result.status==='review'?null:false;}}return quiz;}
 export function quizScore(quiz){let correct=0,pending=0;for(const question of quiz.questions){for(const field of ['name','material','fact']){const grade=quiz.grades?.[question.id]?.[field];if(grade===true)correct++;else if(grade!==false)pending++;}}return {correct,pending,total:quiz.questions.length*3};}
