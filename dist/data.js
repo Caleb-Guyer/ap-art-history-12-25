@@ -2,14 +2,13 @@
 // Rulers, donors, and depicted figures are not automatically the artists.
 export const FIELDS = {
   all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
-  details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, artists, culture and period, and context.'},
+  details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, culture and period, and named artists.'},
   name: {label:'Names', prompt:'Which artwork is this?', help:'Give the title of the assigned work. Include the person or place that identifies it.'},
   material: {label:'Materials', prompt:'What is it made of?', help:'Give the complete material line for the assigned work, including inlay and surface treatments.'},
   date: {label:'Dates', prompt:'When was it made?', help:'Any year within a listed range is accepted. Karnak has separate temple and hall dates.'},
   location: {label:'Locations', prompt:'Where did it come from?', help:'Recall the original site and modern country, rather than just the museum.'},
   artist: {label:'Artists', prompt:'Who made it?', help:'Distinguish the artist or architect from a ruler, patron, or person depicted.'},
-  culture: {label:'Culture & period', prompt:'Which culture and period?', help:'Identify the civilization. For Egyptian works, add the kingdom or period.'},
-  context: {label:'Context', prompt:'What is its context?', help:'Recall its purpose, meaning, or a distinctive visual feature. Make it specific to this work.'}
+  culture: {label:'Culture & period', prompt:'Which culture and period?', help:'Identify the civilization. For Egyptian works, add the kingdom or period.'}
 };
 const I=(id,count,labels,extras={})=>Array.from({length:count},(_,i)=>({src:`images/work-${id}-${i+1}.jpg`,label:labels[i],quiz:i===0,...extras[i]}));
 const unknown='Unrecorded artist(s)';
@@ -126,7 +125,7 @@ export const WORKS = [
   sources:[63,65,66,67,68],links:[{title:'Smarthistory: Temple of Amun-Re and Hypostyle Hall',url:'https://smarthistory.org/temple-of-amun-re-and-the-hypostyle-hall-karnak/'}],nameAliases:['temple of amun re','temple of amon re','temple of amun ra','temple of amon ra','temple of amun re and hypostyle hall','temple of amun re hypostyle hall','karnak temple of amun re'],images:I(20,2,['Hypostyle Hall','Painted column detail'],{1:{quiz:true}})
  },
  {
-  id:21,name:'Mortuary Temple of Hatshepsut',shortName:'Mortuary Temple of Hatshepsut',
+  id:21,name:'Mortuary Temple of Hatshepsut',shortName:'Mortuary Temple of Hatshepsut',artistKnown:true,
   material:'Sandstone, partially carved into a rock cliff, and red granite',materialParts:[['sandstone'],['red granite']],materialLabels:['sandstone','red granite'],
   date:'c. 1473–1458 BCE',dateNumbers:[[1473,1458]],sortDate:1473,
   location:'Deir el-Bahri, near Luxor (Thebes), Egypt',locationTerms:[['deir el bahri','deir el bahari','luxor','thebes'],['egypt']],culture:'Egyptian',period:'New Kingdom, 18th Dynasty',artist:'Senenmut (traditionally attributed architect); sculptors unrecorded',patron:'Pharaoh Hatshepsut',

@@ -1,10 +1,13 @@
-import {WORKS,FIELDS,shortDetail} from './data.js?v=6';
+import {WORKS,FIELDS,shortDetail} from './data.js?v=7';
 
 export const FACT_FIELDS=['date','location','artist','culture'];
-export const STUDY_FIELDS=['name','material','date','location','artist','culture','context'];
+export const STUDY_FIELDS=['name','material','date','location','artist','culture'];
 export const DETAIL_FIELDS=STUDY_FIELDS.filter(field=>field!=='name'&&field!=='material');
-export const FIELD_LABELS={details:'Details',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period',context:'Context'};
-export function studyFields(focus){return focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:[focus];}
+export const FIELD_LABELS={details:'Details',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period'};
+export function hasKnownArtist(work){return work?.artistKnown===true;}
+export function fieldAvailable(work,field){return field!=='context'&&(field!=='artist'||hasKnownArtist(work));}
+export function studyFields(focus,work){const fields=focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:Object.hasOwn(FIELDS,focus)?[focus]:[];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
+export function quizFactFields(work){return work?FACT_FIELDS.filter(field=>fieldAvailable(work,field)):FACT_FIELDS;}
 
 export const STORAGE_KEY='ap-art-history-12-25-v1';
 export const normalize=value=>String(value??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,'').replace(/tutankham[eo]n/g,'tutankhamun').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
@@ -31,8 +34,7 @@ export function makeChoices(work,field,random=Math.random){
  return {options,answer:correct};
 }
 export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode='type',randomize=false,random=Math.random}={}){
- const fields=mode==='choice'?studyFields(focus):[focus];
- const questions=ids.flatMap(id=>fields.map(field=>({id,field,...(mode==='choice'?makeChoices(getWork(id),field,random):{})})));
+ const questions=ids.flatMap(id=>{const work=getWork(id),fields=mode==='choice'?studyFields(focus,work):Object.hasOwn(FIELDS,focus)&&fieldAvailable(work,focus)?[focus]:[];return fields.map(field=>({id,field,...(mode==='choice'?makeChoices(work,field,random):{})}));});
  return randomize?shuffle(questions,random):questions;
 }
 
@@ -98,8 +100,9 @@ export function checkAnswer(work,field,answer){
 export function defaultStore(){return {version:1,stats:{},history:[],focus:'material',mode:'type',study:null,quiz:null};}
 export function sanitizeStore(raw){
  const clean=defaultStore();if(!raw||typeof raw!=='object'||raw.version!==1)return clean;
- const fields=Object.keys(FIELDS);
- clean.focus=fields.includes(raw.focus)?raw.focus:'material';
+ const fields=[...Object.keys(FIELDS),'context'];
+ clean.focus=raw.focus==='context'?'details':fields.includes(raw.focus)?raw.focus:'material';
+ if(raw.archivedStudy&&typeof raw.archivedStudy==='object')clean.archivedStudy=raw.archivedStudy;
  clean.mode=raw.mode==='choice'?'choice':'type';
  for(const w of WORKS){const saved=raw.stats?.[w.id];if(!saved||typeof saved!=='object')continue;clean.stats[w.id]={};for(const f of fields){const v=saved[f];if(v&&typeof v==='object'){clean.stats[w.id][f]={seen:Math.max(0,Math.min(100000,Number(v.seen)||0)),correct:Math.max(0,Math.min(100000,Number(v.correct)||0)),streak:Math.max(0,Math.min(100000,Number(v.streak)||0)),lastCorrect:v.lastCorrect===true};}}}
  clean.history=Array.isArray(raw.history)?raw.history.slice(0,30).filter(x=>x&&typeof x==='object'):[];
@@ -111,24 +114,42 @@ export function sanitizeStore(raw){
   else if(s.mode==='choice')clean.study=null;
   else{clean.study.mode='type';clean.study.responses={};clean.study.questions=s.queue.map(id=>({id,field:s.focus}));clean.study.ratings=Object.fromEntries(s.queue.flatMap((id,i)=>typeof s.ratings?.[id]==='boolean'?[[i,s.ratings[id]]]:[]));}
  }
+ if(clean.study){
+  const session=clean.study;
+  if(session.focus==='context'){clean.archivedStudy=session;clean.study=null;}
+  else{
+   const kept=session.questions.map((question,index)=>({question,index})).filter(({question})=>fieldAvailable(getWork(question.id),question.field));
+   if(kept.length!==session.questions.length){
+    session.retiredQuestions=[...(Array.isArray(session.retiredQuestions)?session.retiredQuestions:[]),...session.questions.flatMap((question,index)=>fieldAvailable(getWork(question.id),question.field)?[]:[{question,rating:session.ratings[index],response:session.responses[index],typed:index===session.index?session.typed:''}])];
+    const currentKept=kept.some(({index})=>index===session.index);
+    session.index=kept.filter(({index})=>index<session.index).length;
+    session.questions=kept.map(x=>x.question);session.queue=session.questions.map(x=>x.id);
+    session.ratings=Object.fromEntries(kept.flatMap(({index},next)=>typeof session.ratings[index]==='boolean'?[[next,session.ratings[index]]]:[]));
+    session.responses=Object.fromEntries(kept.flatMap(({index},next)=>typeof session.responses[index]==='string'?[[next,session.responses[index]]]:[]));
+    session.correct=Object.values(session.ratings).filter(Boolean).length;session.again=Object.entries(session.ratings).filter(([,value])=>!value).map(([index])=>session.queue[Number(index)]);
+    if(!currentKept){session.typed='';session.revealed=Object.hasOwn(session.responses,session.index);session.image=0;}
+    if(!kept.length)clean.archivedStudy=session;
+   }
+  }
+ }
  const q=raw.quiz;
  if(q&&['active','review'].includes(q.status)&&Array.isArray(q.questions)&&q.questions.length>0&&q.questions.length<=14&&new Set(q.questions.map(x=>x.id)).size===q.questions.length&&q.questions.every(x=>getWork(x.id)&&Number.isInteger(x.image)&&getWork(x.id).images[x.image]?.quiz)&&Number.isInteger(q.index)&&q.index>=0&&q.index<q.questions.length&&Number.isFinite(q.startedAt)){
-  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:FACT_FIELDS.includes(a?.factField)?a.factField:null};}
+  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:FACT_FIELDS.includes(a?.factField)?a.factField:null};if(a?.retiredFact)answers[question.id].retiredFact=a.retiredFact;if(q.status==='active'&&answers[question.id].factField==='artist'&&!hasKnownArtist(getWork(question.id))){answers[question.id].retiredFact={fact:answers[question.id].fact,factField:'artist'};answers[question.id].factField='date';answers[question.id].fact='';}}
   const grades={};if(q.status==='review'){for(const question of q.questions){const g=q.grades?.[question.id]??{};grades[question.id]={};for(const field of ['name','material','fact'])grades[question.id][field]=g[field]===true?true:g[field]===false?false:null;}}
   clean.quiz={...q,answers,grades,status:q.status,mode:q.mode==='choice'?'choice':'type',part:[0,1,2].includes(q.part)?q.part:0,timerMinutes:[0,10,15,20].includes(q.timerMinutes)?q.timerMinutes:0,finishedAt:Number.isFinite(q.finishedAt)?q.finishedAt:null,recorded:!!q.recorded};
-  if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...FACT_FIELDS])if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);}
+  if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...quizFactFields(w)])if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);}
  }
  return clean;
 }
 export function recordRecall(store,id,field,correct){store.stats[id]??={};const stat=store.stats[id][field]??{seen:0,correct:0,streak:0};store.stats[id][field]={seen:stat.seen+1,correct:stat.correct+(correct?1:0),streak:correct?stat.streak+1:0,lastCorrect:correct};}
-export function needsPractice(store,id,field){const stats=store.stats[id]??{};if(field==='all')return Object.values(stats).some(s=>s.seen>0&&!s.lastCorrect);if(field==='details')return [...DETAIL_FIELDS,'details'].some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);return stats[field]?.seen>0&&!stats[field].lastCorrect;}
+export function needsPractice(store,id,field){const stats=store.stats[id]??{},work=getWork(id);const fields=field==='all'?[...studyFields('all',work),'all','details']:field==='details'?[...studyFields('details',work),'details']:fieldAvailable(work,field)?[field]:[];return fields.some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);}
 export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.id]?.material?.streak??0)>=2).length;}
-export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&FACT_FIELDS.includes(a.factField);}).length;}
+export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&quizFactFields(getWork(q.id)).includes(a.factField);}).length;}
 export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){
- const questions=shuffle(ids,random).slice(0,count).map(id=>{const work=getWork(id);const views=work.images.map((im,i)=>im.quiz?i:null).filter(i=>i!==null);return {id,image:alternateViews?views[Math.floor(random()*views.length)]:0,...(mode==='choice'?{choices:Object.fromEntries(['name','material',...FACT_FIELDS].map(f=>[f,makeChoices(work,f,random)]))}:{})};});
- const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:FACT_FIELDS.includes(factField)?factField:'date'}]));
+ const questions=shuffle(ids,random).slice(0,count).map(id=>{const work=getWork(id);const views=work.images.map((im,i)=>im.quiz?i:null).filter(i=>i!==null);return {id,image:alternateViews?views[Math.floor(random()*views.length)]:0,...(mode==='choice'?{choices:Object.fromEntries(['name','material',...quizFactFields(work)].map(f=>[f,makeChoices(work,f,random)]))}:{})};});
+ const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:quizFactFields(getWork(q.id)).includes(factField)?factField:'date'}]));
  return {id:`quiz-${Date.now()}`,status:'active',questions,index:0,part:0,mode,answers,grades:{},startedAt:Date.now(),finishedAt:null,timerMinutes,alternateViews,recorded:false};
 }
-function validChoices(work,field,q){return STUDY_FIELDS.includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
+function validChoices(work,field,q){return [...STUDY_FIELDS,'context'].includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
 export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id),a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const key of ['name','material','fact']){const field=key==='fact'?a.factField:key;if(!a[key]?.trim()){quiz.grades[q.id][key]=false;continue;}if(!field){quiz.grades[q.id][key]=null;continue;}if(quiz.mode==='choice'){quiz.grades[q.id][key]=a[key]===choiceAnswer(w,field);continue;}const result=checkAnswer(w,field,a[key]);quiz.grades[q.id][key]=result.status==='correct'?true:result.status==='review'?null:false;}}return quiz;}
 export function quizScore(quiz){let correct=0,pending=0;for(const question of quiz.questions){for(const field of ['name','material','fact']){const grade=quiz.grades?.[question.id]?.[field];if(grade===true)correct++;else if(grade!==false)pending++;}}return {correct,pending,total:quiz.questions.length*3};}
