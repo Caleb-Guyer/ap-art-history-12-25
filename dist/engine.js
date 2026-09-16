@@ -1,14 +1,15 @@
-import {WORKS,FIELDS,RECOMMENDATIONS,shortDetail} from './data.js?v=10';
+import {WORKS,FIELDS,RECOMMENDATIONS,shortDetail} from './data.js?v=11';
 
 export const FACT_FIELDS=['date','location','culture'];
 export const STUDY_FIELDS=['name','material','date','location','culture'];
 export const DETAIL_FIELDS=STUDY_FIELDS.filter(field=>field!=='name'&&field!=='material');
+export const BEST_QUIZ_FIELDS=['name','material','recommendation'];
 export const FIELD_LABELS={details:'Details',recommendation:'Recommendation',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period'};
 export function hasKnownArtist(work){return work?.artistKnown===true;}
 export function fieldAvailable(work,field){return field!=='context'&&field!=='artist';}
 export function fieldLabel(work,field){return field==='location'&&hasKnownArtist(work)?'Location or artist':FIELD_LABELS[field];}
 export function referenceFor(work,field){return choiceAnswers(work,field).map(shortDetail).join(' or ');}
-export function studyFields(focus,work){const fields=focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:Object.hasOwn(FIELDS,focus)?[focus]:[];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
+export function studyFields(focus,work){const fields=focus==='best_quiz'?BEST_QUIZ_FIELDS:focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:Object.hasOwn(FIELDS,focus)?[focus]:[];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
 export function quizFactFields(work){const fields=[...FACT_FIELDS,'recommendation'];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
 
 export const STORAGE_KEY='ap-art-history-12-25-v1';
@@ -51,8 +52,13 @@ function refreshLocationChoices(work,field,question,selected){
  return {...question,options,answers};
 }
 export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode='type',randomize=false,random=Math.random}={}){
- const questions=ids.flatMap(id=>{const work=getWork(id),fields=mode==='choice'?studyFields(focus,work):Object.hasOwn(FIELDS,focus)&&fieldAvailable(work,focus)?[focus]:[];return fields.map(field=>({id,field,...(mode==='choice'?makeChoices(work,field,random):{})}));});
- return randomize?shuffle(questions,random):questions;
+ const questions=ids.flatMap(id=>{const work=getWork(id),fields=mode==='choice'||focus==='best_quiz'?studyFields(focus,work):Object.hasOwn(FIELDS,focus)&&fieldAvailable(work,focus)?[focus]:[];return fields.map(field=>({id,field,...(mode==='choice'?makeChoices(work,field,random):{})}));});
+ return randomize?shuffleStudyQuestions(questions,focus,random):questions;
+}
+export function shuffleStudyQuestions(questions,focus,random=Math.random){
+ if(focus!=='best_quiz')return shuffle(questions,random);
+ const works=new Map();for(const question of questions){if(!works.has(question.id))works.set(question.id,[]);works.get(question.id).push(question);}
+ return shuffle([...works.values()],random).flatMap(group=>group.sort((a,b)=>BEST_QUIZ_FIELDS.indexOf(a.field)-BEST_QUIZ_FIELDS.indexOf(b.field)));
 }
 
 export function checkAnswer(work,field,answer){
@@ -162,7 +168,7 @@ export function sanitizeStore(raw){
  return clean;
 }
 export function recordRecall(store,id,field,correct){store.stats[id]??={};const stat=store.stats[id][field]??{seen:0,correct:0,streak:0};store.stats[id][field]={seen:stat.seen+1,correct:stat.correct+(correct?1:0),streak:correct?stat.streak+1:0,lastCorrect:correct};}
-export function needsPractice(store,id,field){const stats=store.stats[id]??{},work=getWork(id);const fields=field==='all'?[...studyFields('all',work),'all','details','recommendation']:field==='details'?[...studyFields('details',work),'details','recommendation']:fieldAvailable(work,field)?[field]:[];return fields.some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);}
+export function needsPractice(store,id,field){const stats=store.stats[id]??{},work=getWork(id);const fields=field==='best_quiz'?BEST_QUIZ_FIELDS:field==='all'?[...studyFields('all',work),'all','details','recommendation']:field==='details'?[...studyFields('details',work),'details','recommendation']:fieldAvailable(work,field)?[field]:[];return fields.some(f=>stats[f]?.seen>0&&!stats[f].lastCorrect);}
 export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.id]?.material?.streak??0)>=2).length;}
 export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&quizFactFields(getWork(q.id)).includes(a.factField);}).length;}
 export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){

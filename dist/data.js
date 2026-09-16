@@ -1,6 +1,7 @@
 // Course wording comes first. Slide references are 1-based PDF pages.
 // Rulers, donors, and depicted figures are not automatically the artists.
 export const FIELDS = {
+  best_quiz: {label:'Best for quiz', prompt:'Name, material, recommendation', help:'Answer three questions for each artwork, then move to the next piece.'},
   all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
   details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, and culture and period. Senenmut is accepted with the location of Hatshepsut’s temple.'},
   recommendation: {label:'Recommendation', prompt:'What is the recommended detail?', help:'One short answer to memorize for each work.'},

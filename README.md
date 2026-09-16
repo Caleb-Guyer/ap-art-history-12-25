@@ -4,7 +4,8 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 
 ## Features
 
-- Eight study categories: all details, details, recommendation, names, materials, dates, locations, and culture/period.
+- Nine study categories: best for quiz, all details, details, recommendation, names, materials, dates, locations, and culture/period.
+- Best for quiz asks **name → material → recommendation** for one artwork before moving to the next, in both typed and multiple-choice modes: 42 questions across all 14 works. Shuffling changes artwork order while keeping each work’s questions together. Missed-question retries preserve the same order among the remaining questions.
 - Recommendation practices one short extra detail per work in typed or multiple-choice mode. It is also available as the mock quiz’s third answer and in Quick review. The 14 works reuse nine answers: 3000 BCE, 2700 BCE, 2500 BCE, Giza/Egypt, 1750 BCE, Egyptian/New Kingdom, Amarna/Egypt, Egypt, and 720 BCE. Date checking still accepts any year in the work’s listed range.
 - Details combines dates, locations, and culture/period. Typed recall shows these together; multiple choice covers 42 questions across the 14 works.
 - Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 70 eligible work/category combinations, with instant feedback and missed-question practice.

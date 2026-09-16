@@ -1,5 +1,5 @@
-import {WORKS,FIELDS,VOCAB,CONFUSIONS,shortDetail} from './data.js?v=10';
-import {STORAGE_KEY,normalize,shuffle,getWork,checkAnswer,defaultStore,sanitizeStore,recordRecall,needsPractice,makeQuiz,quizProgress,finishQuiz,quizScore,FACT_FIELDS,FIELD_LABELS,makeStudyQuestions,studyFields,fieldAvailable,quizFactFields,fieldLabel,referenceFor,choiceIsCorrect} from './engine.js?v=10';
+import {WORKS,FIELDS,VOCAB,CONFUSIONS,shortDetail} from './data.js?v=11';
+import {STORAGE_KEY,normalize,shuffle,getWork,checkAnswer,defaultStore,sanitizeStore,recordRecall,needsPractice,makeQuiz,quizProgress,finishQuiz,quizScore,FACT_FIELDS,FIELD_LABELS,makeStudyQuestions,shuffleStudyQuestions,studyFields,fieldAvailable,quizFactFields,fieldLabel,referenceFor,choiceIsCorrect} from './engine.js?v=11';
 import {AudioDeck,AUDIO_RATES,audioTime} from './audio-player.js?v=10';
 
 const root=document.querySelector('#app');
@@ -123,7 +123,7 @@ root.addEventListener('click',event=>{const el=event.target.closest('[data-actio
  case 'study-again':recordStudy(false);break;
  case 'study-got':recordStudy(true);break;
  case 'study-all':startStudy({randomize:true});render();break;
- case 'retry-study':{const s=study();startStudy({focus:s.focus,mode:s.mode,questions:shuffle(s.questions.filter((q,i)=>s.ratings[i]===false))});render();break;}
+ case 'retry-study':{const s=study();startStudy({focus:s.focus,mode:s.mode,questions:shuffleStudyQuestions(s.questions.filter((q,i)=>s.ratings[i]===false),s.focus)});render();break;}
  case 'study-skipped':{const s=study();startStudy({focus:s.focus,mode:s.mode,questions:s.questions.filter((q,i)=>!Object.hasOwn(s.ratings??{},i))});render();break;}
  case 'shuffle':{const s=study();startStudy({focus:s.focus,filter:s.filter,randomize:true});render();break;}
  case 'previous-study':{const s=study();s.index=Math.max(0,s.index-1);s.revealed=Object.hasOwn(s.responses,s.index);s.typed='';s.image=0;save();render();break;}
