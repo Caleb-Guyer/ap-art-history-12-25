@@ -1,11 +1,13 @@
-import {WORKS,FIELDS,shortDetail} from './data.js?v=7';
+import {WORKS,FIELDS,shortDetail} from './data.js?v=8';
 
-export const FACT_FIELDS=['date','location','artist','culture'];
-export const STUDY_FIELDS=['name','material','date','location','artist','culture'];
+export const FACT_FIELDS=['date','location','culture'];
+export const STUDY_FIELDS=['name','material','date','location','culture'];
 export const DETAIL_FIELDS=STUDY_FIELDS.filter(field=>field!=='name'&&field!=='material');
 export const FIELD_LABELS={details:'Details',name:'Name',material:'Material',date:'Date',location:'Location',artist:'Artist',culture:'Culture & period'};
 export function hasKnownArtist(work){return work?.artistKnown===true;}
-export function fieldAvailable(work,field){return field!=='context'&&(field!=='artist'||hasKnownArtist(work));}
+export function fieldAvailable(work,field){return field!=='context'&&field!=='artist';}
+export function fieldLabel(work,field){return field==='location'&&hasKnownArtist(work)?'Location or artist':FIELD_LABELS[field];}
+export function referenceFor(work,field){return choiceAnswers(work,field).map(shortDetail).join(' or ');}
 export function studyFields(focus,work){const fields=focus==='all'?STUDY_FIELDS:focus==='details'?DETAIL_FIELDS:Object.hasOwn(FIELDS,focus)?[focus]:[];return work?fields.filter(field=>fieldAvailable(work,field)):fields;}
 export function quizFactFields(work){return work?FACT_FIELDS.filter(field=>fieldAvailable(work,field)):FACT_FIELDS;}
 
@@ -21,17 +23,28 @@ const materialVocabulary=['mud brick','mudbrick','gypsum','shell','lapis lazuli'
 export function dateIntervals(work){return work.dateNumbers.flatMap(list=>work.id===20?list.map(n=>[n,n]):[[Math.min(...list),Math.max(...list)]]);}
 export function dateInRange(work,year){return Number.isInteger(year)&&dateIntervals(work).some(([lo,hi])=>year>=lo&&year<=hi);}
 export function choiceAnswer(work,field){return field==='artist'?(work.id===21?'Senenmut (traditionally attributed)':'Unknown / unrecorded'):answerFor(work,field);}
+export function choiceAnswers(work,field){return [choiceAnswer(work,field),...(field==='location'&&hasKnownArtist(work)?[choiceAnswer(work,'artist')]:[])];}
+export function choiceIsCorrect(work,field,value){return choiceAnswers(work,field).some(answer=>normalize(shortDetail(answer))===normalize(shortDetail(value)));}
 export function makeChoices(work,field,random=Math.random){
- const correct=choiceAnswer(work,field);
+ const answers=choiceAnswers(work,field),correct=answers[0];
  let pool;
  if(field==='artist')pool=['Unknown / unrecorded','Senenmut (traditionally attributed)','Imhotep','Thutmose'];
  else if(field==='date')pool=WORKS.filter(other=>!dateIntervals(other).some(([a,b])=>dateIntervals(work).some(([c,d])=>a<=d&&c<=b))).map(other=>other.date);
  else pool=WORKS.filter(other=>other.id!==work.id).map(other=>choiceAnswer(other,field));
- // Equivalent materials, locations and culture labels must not create two valid choices.
+ // Keep the intended answers and exclude equivalent distractors.
  pool=[...new Map(pool.map(value=>[normalize(shortDetail(value)),value])).values()].filter(value=>normalize(shortDetail(value))!==normalize(shortDetail(correct))&&checkAnswer(work,field,value).status!=='correct'&&checkAnswer(work,field,shortDetail(value)).status!=='correct');
- const options=shuffle([correct,...shuffle(pool,random).slice(0,3)],random);
+ const options=shuffle([...answers,...shuffle(pool,random).slice(0,4-answers.length)],random);
  if(options.length!==4)throw new Error(`Not enough distinct choices: ${work.id} ${field}`);
- return {options,answer:correct};
+ return {options,answer:correct,...(answers.length>1?{answers}:{})};
+}
+function refreshLocationChoices(work,field,question,selected){
+ if(field!=='location'||!hasKnownArtist(work))return question;
+ const answers=choiceAnswers(work,field),options=[...question.options];
+ for(const answer of answers)if(!options.includes(answer)){
+  const index=options.findIndex(option=>!choiceIsCorrect(work,field,option)&&option!==selected);
+  if(index>=0)options[index]=answer;
+ }
+ return {...question,options,answers};
 }
 export function makeStudyQuestions({focus='material',ids=WORKS.map(w=>w.id),mode='type',randomize=false,random=Math.random}={}){
  const questions=ids.flatMap(id=>{const work=getWork(id),fields=mode==='choice'?studyFields(focus,work):Object.hasOwn(FIELDS,focus)&&fieldAvailable(work,focus)?[focus]:[];return fields.map(field=>({id,field,...(mode==='choice'?makeChoices(work,field,random):{})}));});
@@ -67,6 +80,7 @@ export function checkAnswer(work,field,answer){
   return status('correct',/\bBC(?:E)?\b/.test(era)?'Accepted date.':'Accepted date (BCE).');
  }
  if(field==='location'){
+  if(hasKnownArtist(work)&&['senenmut','senmut','senemut'].includes(normalize(shortDetail(answer))))return status('correct','Artist recognized.');
   if(work.id===19){
    const bab=hasPhrase(input,'babylon'),susa=hasPhrase(input,'susa'),iraq=hasPhrase(input,'iraq'),iran=hasPhrase(input,'iran');
    if((bab&&iraq&&!susa&&!iran)||(susa&&iran&&!bab&&!iraq))return status('correct','Location recognized. Keep original site and findspot distinct.');
@@ -100,8 +114,8 @@ export function checkAnswer(work,field,answer){
 export function defaultStore(){return {version:1,stats:{},history:[],focus:'material',mode:'type',study:null,quiz:null};}
 export function sanitizeStore(raw){
  const clean=defaultStore();if(!raw||typeof raw!=='object'||raw.version!==1)return clean;
- const fields=[...Object.keys(FIELDS),'context'];
- clean.focus=raw.focus==='context'?'details':fields.includes(raw.focus)?raw.focus:'material';
+ const fields=[...Object.keys(FIELDS),'context','artist'];
+ clean.focus=raw.focus==='context'?'details':raw.focus==='artist'?'location':fields.includes(raw.focus)?raw.focus:'material';
  if(raw.archivedStudy&&typeof raw.archivedStudy==='object')clean.archivedStudy=raw.archivedStudy;
  clean.mode=raw.mode==='choice'?'choice':'type';
  for(const w of WORKS){const saved=raw.stats?.[w.id];if(!saved||typeof saved!=='object')continue;clean.stats[w.id]={};for(const f of fields){const v=saved[f];if(v&&typeof v==='object'){clean.stats[w.id][f]={seen:Math.max(0,Math.min(100000,Number(v.seen)||0)),correct:Math.max(0,Math.min(100000,Number(v.correct)||0)),streak:Math.max(0,Math.min(100000,Number(v.streak)||0)),lastCorrect:v.lastCorrect===true};}}}
@@ -116,7 +130,7 @@ export function sanitizeStore(raw){
  }
  if(clean.study){
   const session=clean.study;
-  if(session.focus==='context'){clean.archivedStudy=session;clean.study=null;}
+  if(session.focus==='context'||session.focus==='artist'){clean.archivedStudy=session;clean.study=null;}
   else{
    const kept=session.questions.map((question,index)=>({question,index})).filter(({question})=>fieldAvailable(getWork(question.id),question.field));
    if(kept.length!==session.questions.length){
@@ -132,12 +146,13 @@ export function sanitizeStore(raw){
    }
   }
  }
+ if(clean.study?.mode==='choice')clean.study.questions=clean.study.questions.map((question,index)=>refreshLocationChoices(getWork(question.id),question.field,question,clean.study.responses[index]));
  const q=raw.quiz;
  if(q&&['active','review'].includes(q.status)&&Array.isArray(q.questions)&&q.questions.length>0&&q.questions.length<=14&&new Set(q.questions.map(x=>x.id)).size===q.questions.length&&q.questions.every(x=>getWork(x.id)&&Number.isInteger(x.image)&&getWork(x.id).images[x.image]?.quiz)&&Number.isInteger(q.index)&&q.index>=0&&q.index<q.questions.length&&Number.isFinite(q.startedAt)){
-  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:FACT_FIELDS.includes(a?.factField)?a.factField:null};if(a?.retiredFact)answers[question.id].retiredFact=a.retiredFact;if(q.status==='active'&&answers[question.id].factField==='artist'&&!hasKnownArtist(getWork(question.id))){answers[question.id].retiredFact={fact:answers[question.id].fact,factField:'artist'};answers[question.id].factField='date';answers[question.id].fact='';}}
+  const answers={};for(const question of q.questions){const a=q.answers?.[question.id];answers[question.id]={name:typeof a?.name==='string'?a.name.slice(0,3000):'',material:typeof a?.material==='string'?a.material.slice(0,3000):'',fact:typeof a?.fact==='string'?a.fact.slice(0,3000):'',factField:[...FACT_FIELDS,'artist'].includes(a?.factField)?a.factField:null};if(a?.retiredFact)answers[question.id].retiredFact=a.retiredFact;if(q.status==='active'&&answers[question.id].factField==='artist'&&hasKnownArtist(getWork(question.id)))answers[question.id].factField='location';else if(q.status==='active'&&answers[question.id].factField==='artist'){answers[question.id].retiredFact={fact:answers[question.id].fact,factField:'artist'};answers[question.id].factField='date';answers[question.id].fact='';}}
   const grades={};if(q.status==='review'){for(const question of q.questions){const g=q.grades?.[question.id]??{};grades[question.id]={};for(const field of ['name','material','fact'])grades[question.id][field]=g[field]===true?true:g[field]===false?false:null;}}
   clean.quiz={...q,answers,grades,status:q.status,mode:q.mode==='choice'?'choice':'type',part:[0,1,2].includes(q.part)?q.part:0,timerMinutes:[0,10,15,20].includes(q.timerMinutes)?q.timerMinutes:0,finishedAt:Number.isFinite(q.finishedAt)?q.finishedAt:null,recorded:!!q.recorded};
-  if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...quizFactFields(w)])if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);}
+  if(clean.quiz.mode==='choice')for(const question of clean.quiz.questions){const w=getWork(question.id);question.choices??={};for(const f of ['name','material',...quizFactFields(w)]){if(!validChoices(w,f,question.choices[f]))question.choices[f]=makeChoices(w,f);if(q.status==='active')question.choices[f]=refreshLocationChoices(w,f,question.choices[f],answers[w.id].factField===f?answers[w.id].fact:null);}}
  }
  return clean;
 }
@@ -147,9 +162,9 @@ export function materialReadyCount(store){return WORKS.filter(w=>(store.stats[w.
 export function quizProgress(quiz){return quiz.questions.filter(q=>{const a=quiz.answers[q.id];return a&&a.name.trim()&&a.material.trim()&&a.fact.trim()&&quizFactFields(getWork(q.id)).includes(a.factField);}).length;}
 export function makeQuiz({count=14,ids=WORKS.map(w=>w.id),alternateViews=false,timerMinutes=0,mode='type',factField='date',random=Math.random}={}){
  const questions=shuffle(ids,random).slice(0,count).map(id=>{const work=getWork(id);const views=work.images.map((im,i)=>im.quiz?i:null).filter(i=>i!==null);return {id,image:alternateViews?views[Math.floor(random()*views.length)]:0,...(mode==='choice'?{choices:Object.fromEntries(['name','material',...quizFactFields(work)].map(f=>[f,makeChoices(work,f,random)]))}:{})};});
- const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:quizFactFields(getWork(q.id)).includes(factField)?factField:'date'}]));
+ const answers=Object.fromEntries(questions.map(q=>[q.id,{name:'',material:'',fact:'',factField:factField==='artist'&&hasKnownArtist(getWork(q.id))?'location':quizFactFields(getWork(q.id)).includes(factField)?factField:'date'}]));
  return {id:`quiz-${Date.now()}`,status:'active',questions,index:0,part:0,mode,answers,grades:{},startedAt:Date.now(),finishedAt:null,timerMinutes,alternateViews,recorded:false};
 }
-function validChoices(work,field,q){return [...STUDY_FIELDS,'context'].includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
-export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id),a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const key of ['name','material','fact']){const field=key==='fact'?a.factField:key;if(!a[key]?.trim()){quiz.grades[q.id][key]=false;continue;}if(!field){quiz.grades[q.id][key]=null;continue;}if(quiz.mode==='choice'){quiz.grades[q.id][key]=a[key]===choiceAnswer(w,field);continue;}const result=checkAnswer(w,field,a[key]);quiz.grades[q.id][key]=result.status==='correct'?true:result.status==='review'?null:false;}}return quiz;}
+function validChoices(work,field,q){return [...STUDY_FIELDS,'context','artist'].includes(field)&&q?.answer===choiceAnswer(work,field)&&Array.isArray(q.options)&&q.options.length===4&&new Set(q.options).size===4&&q.options.includes(q.answer)&&q.options.every(x=>typeof x==='string'&&x.length<=3000);}
+export function finishQuiz(quiz){quiz.status='review';quiz.finishedAt=Date.now();quiz.grades={};for(const q of quiz.questions){const w=getWork(q.id),a=quiz.answers[q.id]??{};quiz.grades[q.id]={};for(const key of ['name','material','fact']){const field=key==='fact'?a.factField:key;if(!a[key]?.trim()){quiz.grades[q.id][key]=false;continue;}if(!field){quiz.grades[q.id][key]=null;continue;}if(quiz.mode==='choice'){quiz.grades[q.id][key]=choiceIsCorrect(w,field,a[key]);continue;}const result=checkAnswer(w,field,a[key]);quiz.grades[q.id][key]=result.status==='correct'?true:result.status==='review'?null:false;}}return quiz;}
 export function quizScore(quiz){let correct=0,pending=0;for(const question of quiz.questions){for(const field of ['name','material','fact']){const grade=quiz.grades?.[question.id]?.[field];if(grade===true)correct++;else if(grade!==false)pending++;}}return {correct,pending,total:quiz.questions.length*3};}

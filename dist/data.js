@@ -2,12 +2,11 @@
 // Rulers, donors, and depicted figures are not automatically the artists.
 export const FIELDS = {
   all: {label:'All details', prompt:'What do you remember?', help:'Study all categories.'},
-  details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, culture and period, and named artists.'},
+  details: {label:'Details', prompt:'What are its details?', help:'Study dates, locations, and culture and period. Senenmut is accepted with the location of Hatshepsut’s temple.'},
   name: {label:'Names', prompt:'Which artwork is this?', help:'Give the title of the assigned work. Include the person or place that identifies it.'},
   material: {label:'Materials', prompt:'What is it made of?', help:'Give the complete material line for the assigned work, including inlay and surface treatments.'},
   date: {label:'Dates', prompt:'When was it made?', help:'Any year within a listed range is accepted. Karnak has separate temple and hall dates.'},
   location: {label:'Locations', prompt:'Where did it come from?', help:'Recall the original site and modern country, rather than just the museum.'},
-  artist: {label:'Artists', prompt:'Who made it?', help:'Distinguish the artist or architect from a ruler, patron, or person depicted.'},
   culture: {label:'Culture & period', prompt:'Which culture and period?', help:'Identify the civilization. For Egyptian works, add the kingdom or period.'}
 };
 const I=(id,count,labels,extras={})=>Array.from({length:count},(_,i)=>({src:`images/work-${id}-${i+1}.jpg`,label:labels[i],quiz:i===0,...extras[i]}));

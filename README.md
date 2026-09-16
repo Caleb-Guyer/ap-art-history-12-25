@@ -4,11 +4,11 @@ A minimal image-recall study app for Ancient Near Eastern and Egyptian art.
 
 ## Features
 
-- Eight study categories: all details, details, names, materials, dates, locations, artists, and culture/period.
-- Details combines dates, locations, culture/period, and named artists. Typed recall shows these together; multiple choice covers 43 questions across the 14 works.
-- Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 71 eligible work/category combinations, with instant feedback and missed-question practice.
+- Seven study categories: all details, details, names, materials, dates, locations, and culture/period.
+- Details combines dates, locations, and culture/period. Typed recall shows these together; multiple choice covers 42 questions across the 14 works.
+- Typed recall or four-option multiple choice for every category. All-details multiple choice covers all 70 eligible work/category combinations, with instant feedback and missed-question practice.
 - Fourteen works with thirty course images, including alternate views and associated objects.
-- A typed or multiple-choice mock quiz: identify the image with its **name, complete material line, and a chosen date, location, artist, or culture/period**. Change the third category for each work. Artist is available only when a named maker is listed; an Artist quiz preference uses Date for other works.
+- A typed or multiple-choice mock quiz: identify the image with its **name, complete material line, and a chosen date, location, or culture/period**. Change the third category for each work. Hatshepsut’s location question accepts either Deir el-Bahri, Egypt or Senenmut. Both appear as correct multiple-choice options; selecting either earns one point.
 - Full, seven-work, and five-work quizzes; optional timer and alternate views.
 - Material checking that catches omitted inlays, supports, colors, and surface treatments.
 - Suggested marks for typed answers, automatic multiple-choice scoring, and adjustable grading before saving.
@@ -50,7 +50,7 @@ Practice marking is deterministic and uses no AI service. Each quiz has three po
 
 Any individual year within a listed course range is accepted, including the endpoints and alternative slide ranges. An omitted era is interpreted as BCE; CE/AD is rejected. A smaller range is accepted when both endpoints fall within one listed range. Karnak has two separate milestones (temple 1550 BCE; hall 1250 BCE), so years between those milestones are not accepted. Multiple-choice date distractors do not overlap any accepted range. Equivalent material and artist options are deduplicated.
 
-Context questions and questions about unknown artists are excluded from study. Senenmut’s traditional attribution for Hatshepsut’s temple is the one named artist in this set. Saved sessions skip retired questions and retain their responses; active quizzes move unknown-artist prompts to Date while keeping the previous answer in the export. Completed quiz results remain intact.
+Context questions and questions about unknown artists are excluded from study. Senenmut’s traditional attribution for Hatshepsut’s temple is combined with its location question, with no separate Artist category. Saved sessions skip retired questions and retain their responses; active quizzes move Hatshepsut’s Artist answer into Location and move unknown-artist prompts to Date while keeping the previous answer in the export. Completed quiz results remain intact.
 
 Previous saved answers and progress remain available. Older quizzes without a third-answer category prompt for one when resumed; already reviewed legacy results retain their marks.
 
